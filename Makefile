@@ -9,6 +9,7 @@ BUILD_DIR = build
 SRC_DIR = src
 
 all: kernel8.img
+	$(ARMGNU)-objdump -D $(BUILD_DIR)/kernel8.elf >> $(BUILD_DIR)/kernel8.elf.dump
 
 clean:
 	rm -rf $(BUILD_DIR) *.img
@@ -35,7 +36,11 @@ qemu: kernel8.img
 qemus: kernel8.img
 	qemu-system-aarch64 $(QEMU_OPS) -kernel $(BUILD_DIR)/kernel8.elf -S
 
+gdb:
+	$(ARMGNU)-gdb -q
+
 kernel8.img: $(SRC_DIR)/linker.ld $(OBJ_FILES)
+	mkdir -p $(BUILD_DIR)
 	$(ARMGNU)-ld -T $(SRC_DIR)/linker.ld -o $(BUILD_DIR)/kernel8.elf $(OBJ_FILES)
 	$(ARMGNU)-objcopy $(BUILD_DIR)/kernel8.elf -O binary kernel8.img
 
