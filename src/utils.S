@@ -1,5 +1,3 @@
-.section ".text"
-
 .globl delay
 delay:
     subs x0, x0, #1
@@ -21,4 +19,11 @@ memzero:
     str xzr, [x0], #8
     subs x1, x1, #8
     bgt memzero
+    ret
+
+.globl get_el
+get_el:
+    mrs x0, CurrentEL
+    lsr x0, x0, #2
+    and x0, x0, #3
     ret

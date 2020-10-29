@@ -1,8 +1,6 @@
 SECTIONS
 {
-	. = 0x80000;
-	.text.boot : { *(.text.boot) }
-	.text : { *(.text) }
+	.text : { *(.text.boot) *(.text) }
 	.rodata : { *(.rodata) }
 	.data : { *(.data) }
 	. = ALIGN(0x8);
