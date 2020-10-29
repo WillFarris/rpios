@@ -14,7 +14,7 @@ _start:
     bl memzero
 
     mov sp, #LOW_MEMORY
-    bl hang
+    bl kernel_main
 hang:
     wfe
     b hang
