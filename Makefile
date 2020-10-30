@@ -1,4 +1,4 @@
-ARMPATH=/home/will/Desktop/gcc-arm-9.2-2019.12-x86_64-aarch64-none-elf/bin/
+include gccpath.mk
 ARMGNU ?= $(ARMPATH)aarch64-none-elf
 
 C_OPS = -Wall -nostdlib -nostartfiles -ffreestanding -mgeneral-regs-only -g -Iinclude
