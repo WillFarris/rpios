@@ -36,7 +36,7 @@ void show_invalid_entry_message(u32 type, u64 esr, u64 address)
 
 void enable_interrupt_controller()
 {
-    REGS_IRQ->irq0_enable_1 = AUX_IRQ | UART_IRQ;
+    REGS_IRQ->irq0_enable_1 = AUX_IRQ | UART_IRQ | TIMER_MATCH1;
 }
 
 void handle_irq()
@@ -49,7 +49,10 @@ void handle_irq()
             irq &= ~AUX_IRQ;
             while((REGS_AUX->mu_iir & 4) == 4)
             {
-                uart_putc(0, uart_getc());
+                char c = uart_getc();
+                if(c == '\r')
+                    uart_putc(0, '\n');
+                uart_putc(0, c);
             }
         }
     }
