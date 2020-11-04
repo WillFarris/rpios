@@ -67,7 +67,7 @@ vectors:
     ventry error_invalid_el1t
     
     ventry sync_invalid_el1h
-    ventry irq_invalid_el1h
+    ventry el1_irq
     ventry fiq_invalid_el1h
     ventry error_invalid_el1h
 
@@ -116,4 +116,10 @@ vectors:
  fiq_invalid_el0_32:
     handle_invalid_entry FIQ_INVALID_EL0_32
  error_invalid_el0_32:
-    handle_invalid_entry ERROR_INVALID_EL0_32
+    handle_invalid_entry error_invalid_el0_32
+
+
+el1_irq:
+   kernel_entry
+   bl handle_irq
+   kernel_exit

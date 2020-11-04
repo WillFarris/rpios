@@ -36,7 +36,7 @@ void show_invalid_entry_message(u32 type, u64 esr, u64 address)
 
 void enable_interrupt_controller()
 {
-    REGS_IRQ->irq0_enable_1 = AUX_IRQ;
+    REGS_IRQ->irq0_enable_1 = AUX_IRQ | UART_IRQ;
 }
 
 void handle_irq()
@@ -44,13 +44,13 @@ void handle_irq()
     u32 irq = REGS_IRQ->irq0_pending_1;
     while(irq)
     {
-        irq &= ~AUX_IRQ;
-
-        while((REGS_AUX->mu_iir & 4) == 4)
+        if(irq & AUX_IRQ)
         {
-            printf("UART recv: ");
-            uart_putc(0, uart_getc());
-            printf("\n");
+            irq &= ~AUX_IRQ;
+            while((REGS_AUX->mu_iir & 4) == 4)
+            {
+                uart_putc(0, uart_getc());
+            }
         }
     }
 }

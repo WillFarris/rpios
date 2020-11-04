@@ -14,7 +14,7 @@ void handle_irq();
 enum vs_irqs
 {
     AUX_IRQ = (1 << 29),
-
+    UART_IRQ = (1 << 57),
 };
 
 struct irq_regs
@@ -26,7 +26,6 @@ struct irq_regs
     reg32 irq0_enable_1;
     reg32 irq0_enable_2;
     reg32 irq0_enable_0;
-    reg32 res;
     reg32 irq0_disable_1;
     reg32 irq0_disable_2;
     reg32 irq0_disable_0;
