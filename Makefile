@@ -31,7 +31,7 @@ DEP_FILES = $(OBJ_FILES:%.o=%.d)
 -include $(DEP_FILES)
 
 qemu: kernel8.img
-	qemu-system-aarch64 $(QEMU_OPS) -kernel kernel8.img
+	qemu-system-aarch64 $(QEMU_OPS) -kernel build/kernel8.elf
 
 qemus: kernel8.img
 	qemu-system-aarch64 $(QEMU_OPS) -kernel $(BUILD_DIR)/kernel8.elf -S

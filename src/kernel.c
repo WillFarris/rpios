@@ -1,6 +1,8 @@
 #include "types.h"
 #include "mini_uart.h"
 #include "printf.h"
+#include "irq.h"
+
 
 void kernel_main() 
 {
@@ -9,12 +11,13 @@ void kernel_main()
 
     printf("\nRaspberry Pi 3 OS!\nWe are running in EL %d\n\n", get_el());
 
+    irq_init_vectors();
+    enable_interrupt_controller();
+    irq_enable();
+
     while(1)
     {
-        char c = uart_getc();
-        if (c ==  '\r')
-            uart_putc(0, '\n');
-        uart_putc(0, c);
+        
     }
     
 }
