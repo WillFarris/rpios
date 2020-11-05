@@ -3,16 +3,16 @@ ARMGNU ?= $(ARMPATH)aarch64-none-elf
 
 C_OPS = -Wall -nostdlib -nostartfiles -ffreestanding -mgeneral-regs-only -g -Iinclude
 ASM_OPS = -g -Iinclude
-QEMU_OPS = -s -M raspi3 -serial null -serial stdio -display none
+QEMU_OPS = -s -M raspi3 -cpu cortex-a53 -serial null -serial stdio -display none
 
 BUILD_DIR = build
 SRC_DIR = src
 
 all: kernel8.img
-	$(ARMGNU)-objdump -D $(BUILD_DIR)/kernel8.elf >> $(BUILD_DIR)/kernel8.elf.dump
+	$(ARMGNU)-objdump -D $(BUILD_DIR)/kernel8.elf > $(BUILD_DIR)/kernel8.elf.dump
 
 clean:
-	rm -rf $(BUILD_DIR) *.img
+	rm -rf $(BUILD_DIR) armstub/build *.img
 
 $(BUILD_DIR)/%_c.o: $(SRC_DIR)/%.c
 	mkdir -p $(@D)
@@ -44,3 +44,10 @@ kernel8.img: $(SRC_DIR)/linker.ld $(OBJ_FILES)
 	$(ARMGNU)-ld -T $(SRC_DIR)/linker.ld -o $(BUILD_DIR)/kernel8.elf $(OBJ_FILES)
 	$(ARMGNU)-objcopy $(BUILD_DIR)/kernel8.elf -O binary kernel8.img
 
+armstub/build/armstub_s.o: armstub/armstub.S
+	mkdir -p $(@D)
+	$(ARMGNU)-gcc $(COPS) -MMD -c $< -o $@
+
+armstub: armstub/build/armstub_s.o
+	$(ARMGNU)-ld --section-start=.text=0 -o armstub/build/armstub.elf armstub/build/armstub_s.o
+	$(ARMGNU)-objcopy armstub/build/armstub.elf -O binary armstub-new.bin

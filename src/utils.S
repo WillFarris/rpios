@@ -27,3 +27,11 @@ get_el:
     lsr x0, x0, #2
     and x0, x0, #3
     ret
+
+.globl sys_timer_get_ticks
+sys_timer_get_ticks:
+    ldr	x0, =0x3f003004
+    ldp	w0, w1, [x0]
+    lsl x1, x1, #32
+    orr x0, x0, x1
+    ret
