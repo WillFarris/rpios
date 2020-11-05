@@ -1,7 +1,22 @@
 #include "gpio.h"
 #include "types.h"
 
-struct TimerRegs
+struct LocalTimer
+{
+    reg32 routing;
+    reg32 res0[3];
+    reg32 control_status;
+    reg32 set_clear_reload;
+    reg32 res1;
+    reg32 timer_control_core0;
+    reg32 timer_control_core1;
+    reg32 timer_control_core2;
+    reg32 timer_control_core3;
+};
+
+#define LOCAL_TIMER ((struct LocalTimer *)(0x40000024))
+
+struct SysTimerRegs
 {
     reg32 timer_cs;
     reg32 timer_clo;
@@ -12,7 +27,7 @@ struct TimerRegs
     reg32 timer_c3;
 };
 
-#define TIMER_REGS ((struct TimerRegs*)(PBASE + 0x00003000))
+#define SYS_TIMER_REGS ((struct SysTimerRegs*)(PBASE + 0x00003000))
 
 
 struct AuxRegs
@@ -67,8 +82,8 @@ typedef enum _GpioFunc
     GFOutput = 1,
     GFAlt0 = 4,
     GFAlt1 = 5,
-    GFAlt2 = 5,
-    GFAlt3 = 5,
+    GFAlt2 = 6,
+    GFAlt3 = 7,
     GFAlt4 = 3,
     GFAlt5 = 2
 } GpioFunc;

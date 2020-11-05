@@ -9,49 +9,44 @@
 
 void kernel_main() 
 {
-    uart_init();
-    init_printf(0, uart_putc);
+    uart_init_alt();
+    init_printf(0, putc);
 
     irq_init_vectors();
     enable_interrupt_controller();
     irq_enable();
-    timer_init();
+    sys_timer_init();
+    local_timer_init();
 
+    printf("\n\nBooting Raspberry Pi 3\nWe are in EL%d\n\n", get_el());
+
+    sys_timer_sleep_ms(1000);
+
+    printf("and... done!\n");
     
-#define pause 50000000
     while(1)
     {
-        /*printf("System timer is %d\nTimer 1 compare is %d\nTimer 3 compare is %d\n",
-            TIMER_REGS->timer_clo, TIMER_REGS->timer_c1, TIMER_REGS->timer_c3);
-        delay(pause);*/
+        uart_putc('R');
+        sys_timer_sleep_ms(100);
+        uart_putc('u');
+        sys_timer_sleep_ms(100);
+        uart_putc('n');
+        sys_timer_sleep_ms(100);
+        uart_putc('n');
+        sys_timer_sleep_ms(100);
+        uart_putc('i');
+        sys_timer_sleep_ms(100);
+        uart_putc('n');
+        sys_timer_sleep_ms(100);
+        uart_putc('g');
+        sys_timer_sleep_ms(100);
+        uart_putc('.');
+        sys_timer_sleep_ms(100);
+        uart_putc('.');
+        sys_timer_sleep_ms(100);
+        uart_putc('.');
+        sys_timer_sleep_ms(100);
+        printf("\r           \r");
     }
-
-
-    /*uart_putc(0, '\r');
-    while(1)
-    {
-        uart_putc(0, 'R');
-        delay(pause);
-        uart_putc(0, 'u');
-        delay(pause);
-
-        uart_putc(0, 'n');
-        delay(pause);
-        uart_putc(0, 'n');
-        delay(pause);
-
-        uart_putc(0, 'i');
-        delay(pause);
-        uart_putc(0, 'n');
-        delay(pause);
-
-        uart_putc(0, 'g');
-        delay(pause);
-        uart_putc(0, '\r');
-        delay(pause);
-        printf("       ");
-        uart_putc(0, '\r');
-
-    }*/
     
 }

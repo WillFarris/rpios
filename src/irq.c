@@ -36,14 +36,13 @@ void show_invalid_entry_message(u32 type, u64 esr, u64 address)
 
 void enable_interrupt_controller()
 {
-    REGS_IRQ->irq0_enable_1 = AUX_IRQ | TIMER_MATCH1 | TIMER_MATCH3;
-    printf("Enabled Interrupt Controller: %X\n", REGS_IRQ->irq0_enable_1);
+    // Enable Mini UART + Timer1 + Timer 3
+    REGS_IRQ->irq0_enable_1 = AUX_IRQ;// | TIMER_MATCH1 | TIMER_MATCH3;
 }
 
 void handle_irq()
 {
     u32 irq = REGS_IRQ->irq0_pending_1;
-    printf("Got IRQ: %X\n", irq);
     while(irq)
     {
         if(irq & AUX_IRQ)
@@ -53,15 +52,29 @@ void handle_irq()
             {
                 char c = uart_getc();
                 if(c == '\r')
-                    uart_putc(0, '\n');
-                uart_putc(0, c);
+                    uart_putc('\n');
+                uart_putc(c);
             }
         }
 
         if(irq & TIMER_MATCH1)
         {
             irq &= ~TIMER_MATCH1;
-            handle_timer_irq();
+            handle_sys_timer1_irq();
+        }
+
+        if(irq & TIMER_MATCH3)
+        {
+            irq &= ~TIMER_MATCH3;
+            handle_sys_timer3_irq();
         }
     }
+
+    u32 local_timer = LOCAL_TIMER->control_status;
+    if(local_timer & (1 << 31))
+    {
+        // Local timer has run out
+        handle_local_timer_irq();
+    }
+    
 }
