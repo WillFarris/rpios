@@ -24,7 +24,7 @@ _start:
 
     ldr x0, =el1_entry
     msr elr_el3, x0
-
+    
     eret
 
 el1_entry:
