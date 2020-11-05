@@ -11,13 +11,13 @@ void show_invalid_entry_message(u32 type, u64 esr, u64 address);
 void enable_interrupt_controller();
 void handle_irq();
 
-enum vs_irqs
+enum vc_irqs
 {
+    TIMER_MATCH0 = (1 << 0),
     TIMER_MATCH1 = (1 << 1),
+    TIMER_MATCH2 = (1 << 2),
     TIMER_MATCH3 = (1 << 3),
-    AUX_IRQ = (1 << 29),
-    UART_IRQ = (1 << 57),
-
+    AUX_IRQ      = (1 << 29),
 };
 
 struct irq_regs

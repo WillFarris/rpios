@@ -4,7 +4,7 @@
 #include "printf.h"
 #include "regstruct.h"
 #include "mini_uart.h"
-
+#include "timer.h"
 
 const char entry_error_messages[16][32] =
 {
@@ -36,12 +36,14 @@ void show_invalid_entry_message(u32 type, u64 esr, u64 address)
 
 void enable_interrupt_controller()
 {
-    REGS_IRQ->irq0_enable_1 = AUX_IRQ | UART_IRQ | TIMER_MATCH1;
+    REGS_IRQ->irq0_enable_1 = AUX_IRQ | TIMER_MATCH1 | TIMER_MATCH3;
+    printf("Enabled Interrupt Controller: %X\n", REGS_IRQ->irq0_enable_1);
 }
 
 void handle_irq()
 {
     u32 irq = REGS_IRQ->irq0_pending_1;
+    printf("Got IRQ: %X\n", irq);
     while(irq)
     {
         if(irq & AUX_IRQ)
@@ -54,6 +56,12 @@ void handle_irq()
                     uart_putc(0, '\n');
                 uart_putc(0, c);
             }
+        }
+
+        if(irq & TIMER_MATCH1)
+        {
+            irq &= ~TIMER_MATCH1;
+            handle_timer_irq();
         }
     }
 }

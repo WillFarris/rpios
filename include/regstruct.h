@@ -1,6 +1,20 @@
 #include "gpio.h"
 #include "types.h"
 
+struct TimerRegs
+{
+    reg32 timer_cs;
+    reg32 timer_clo;
+    reg32 timer_chi;
+    reg32 timer_c0;
+    reg32 timer_c1;
+    reg32 timer_c2;
+    reg32 timer_c3;
+};
+
+#define TIMER_REGS ((struct TimerRegs*)(PBASE + 0x00003000))
+
+
 struct AuxRegs
 {
     reg32 irq_status;
@@ -46,7 +60,6 @@ struct GpioRegs
 };
 
 #define REGS_GPIO ((struct GpioRegs *)(PBASE + 0x0020000))
-
 
 typedef enum _GpioFunc
 {
