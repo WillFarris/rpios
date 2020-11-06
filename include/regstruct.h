@@ -14,7 +14,7 @@ struct LocalTimer
     reg32 timer_control_core3;
 };
 
-#define LOCAL_TIMER ((struct LocalTimer *)(0x40000024))
+#define LOCAL_TIMER ((struct LocalTimer *)(LOCAL_TIMER_ADDR))
 
 struct SysTimerRegs
 {
@@ -27,7 +27,7 @@ struct SysTimerRegs
     reg32 timer_c3;
 };
 
-#define SYS_TIMER_REGS ((struct SysTimerRegs*)(PBASE + 0x00003000))
+#define SYS_TIMER_REGS ((struct SysTimerRegs*)(SYS_TIMER_ADDR))
 
 
 struct AuxRegs
@@ -48,7 +48,7 @@ struct AuxRegs
     reg32 mu_baud_rate;
 };
 
-#define REGS_AUX ((struct AuxRegs *)(PBASE + 0x00215000))
+#define REGS_AUX ((struct AuxRegs *)(AUX_REGS_ADDR))
 
 struct GpioPinData
 {
@@ -74,7 +74,7 @@ struct GpioRegs
     reg32 pupd_enable_clocks[2];
 };
 
-#define REGS_GPIO ((struct GpioRegs *)(PBASE + 0x0020000))
+#define REGS_GPIO ((struct GpioRegs *)(GPIO_ADDR))
 
 typedef enum _GpioFunc
 {

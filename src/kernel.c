@@ -12,15 +12,16 @@ void kernel_main()
     uart_init_alt();
     init_printf(0, putc);
 
+
+    printf("\n\nBooting Raspberry Pi 3\n");
+    
+    printf("\nRunning on core %d\nWe are in EL%d\n\n", get_core(), get_el());
+
     irq_init_vectors();
     enable_interrupt_controller();
     irq_enable();
     sys_timer_init();
     local_timer_init();
-
-    printf("\n\nBooting Raspberry Pi 3\nWe are in EL%d\n\n", get_el());
-
-    sys_timer_sleep_ms(1000);
 
     printf("and... done!\n");
     

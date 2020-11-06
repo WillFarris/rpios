@@ -4,20 +4,20 @@
 #define TXD 14
 #define RXD 15
 
-#define GPFSEL1         (PBASE+0x00200004)
+#define GPFSEL1         (GPIO_ADDR + 4)
 
 void uart_init_alt ( void )
 {
 	unsigned int selector;
 
-	selector = get32(GPFSEL1);
+	selector = REGS_GPIO->func_select[1];//get32(GPFSEL1);
 	selector &= ~(7<<12);           // clean gpio14
 	selector |= GFAlt5<<12;         // set alt5 for gpio14
 
 	selector &= ~(7<<15);           // clean gpio15
 	selector |= GFAlt5<<15;         // set alt5 for gpio15
 	
-    put32(GPFSEL1,selector);
+    REGS_GPIO->func_select[1] = selector;//put32(GPFSEL1,selector);
 
 
     gpio_pin_enable(TXD);
@@ -34,11 +34,11 @@ void uart_init_alt ( void )
 
 void uart_init()
 {
-    gpio_pin_set_func(14, GFAlt5);
-    gpio_pin_set_func(15, GFAlt5);
+    gpio_pin_set_func(TXD, GFAlt5);
+    gpio_pin_set_func(RXD, GFAlt5);
 
-    gpio_pin_enable(14);
-    gpio_pin_enable(15);
+    gpio_pin_enable(TXD);
+    gpio_pin_enable(RXD);
 
     REGS_AUX->enables = 1;
     REGS_AUX->mu_control = 0;
@@ -51,7 +51,8 @@ void uart_init()
 }
 void uart_puts(const char * s)
 {
-    while(s && *s)
+    if(!s) return;
+    while(*s)
     {
         uart_putc(*s);
         ++s;
