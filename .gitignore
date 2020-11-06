@@ -3,3 +3,4 @@ build/
 gccpath.mk
 armstub-new.bin
 armstub/build
+docs
