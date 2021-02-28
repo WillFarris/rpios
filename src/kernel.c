@@ -6,7 +6,6 @@
 #include "timer.h"
 #include "regstruct.h"
 
-
 void kernel_main() 
 {
     uart_init_alt();
@@ -18,36 +17,29 @@ void kernel_main()
     printf("\nRunning on core %d\nWe are in EL%d\n\n", get_core(), get_el());
 
     irq_init_vectors();
+    printf("IRQ vector table initalized\n");
     enable_interrupt_controller();
+    printf("Interrupt controller initialized\n");
     irq_enable();
+    printf("Enabled IRQ interrupts\n");
     sys_timer_init();
+    printf("Enabled system timer\n");
     local_timer_init();
-
-    printf("and... done!\n");
+    printf("Enabled local timer\n\nDone. Running main kernel loop.\n\n");
     
+    const char* running = "Running..";
+    int len = strlen(running);
+    char *c = running;
     while(1)
     {
-        uart_putc('R');
-        sys_timer_sleep_ms(100);
-        uart_putc('u');
-        sys_timer_sleep_ms(100);
-        uart_putc('n');
-        sys_timer_sleep_ms(100);
-        uart_putc('n');
-        sys_timer_sleep_ms(100);
-        uart_putc('i');
-        sys_timer_sleep_ms(100);
-        uart_putc('n');
-        sys_timer_sleep_ms(100);
-        uart_putc('g');
-        sys_timer_sleep_ms(100);
-        uart_putc('.');
-        sys_timer_sleep_ms(100);
-        uart_putc('.');
-        sys_timer_sleep_ms(100);
-        uart_putc('.');
-        sys_timer_sleep_ms(100);
-        printf("\r           \r");
+        if(c < (running+len))
+            uart_putc(*c++);
+        else
+        {
+            c = running;
+            printf("\r           \r");
+        }
+        sys_timer_sleep_ms(100);        
     }
     
 }

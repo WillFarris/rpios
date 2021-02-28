@@ -45,6 +45,7 @@ void handle_irq()
     u32 irq = REGS_IRQ->irq0_pending_1;
     while(irq)
     {
+        // IRQ from UART
         if(irq & AUX_IRQ)
         {
             irq &= ~AUX_IRQ;
@@ -57,12 +58,14 @@ void handle_irq()
             }
         }
 
+        // This timer is not supported on QEMU
         if(irq & TIMER_MATCH1)
         {
             irq &= ~TIMER_MATCH1;
             handle_sys_timer1_irq();
         }
 
+        // This timer is not supported on QEMU
         if(irq & TIMER_MATCH3)
         {
             irq &= ~TIMER_MATCH3;
