@@ -1,6 +1,7 @@
 #include "mem.h"
 #include "reg.h"
 
+// The core to boot on
 #define CORE 0
 
 .section ".text.boot"
