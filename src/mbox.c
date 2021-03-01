@@ -9,13 +9,13 @@ i32 mbox_call(u8 ch)
 {
     u32 r = (((unsigned int)((unsigned long)&mbox)&~0xF) | (ch&0xF));
 
-    do{asm volatile("nop");}while(VIDEOCORE_MAILBOX->mbox_status & MBox_Full);
+    do{asm volatile("nop");}while(VIDEOCORE_MAILBOX->mbox_status & MBoxFull);
 
     VIDEOCORE_MAILBOX->mbox_write = r;
 
     while(1)
     {
-        do{asm volatile("nop");}while(VIDEOCORE_MAILBOX->mbox_status & MBox_Empty);
+        do{asm volatile("nop");}while(VIDEOCORE_MAILBOX->mbox_status & MBoxEmpty);
 
         u32 mr = VIDEOCORE_MAILBOX->mbox_read;
         if (r == mr)

@@ -44,3 +44,7 @@ sys_timer_get_ticks:
     lsl x1, x1, #32
     orr x0, x0, x1
     ret
+
+.globl panic
+panic:
+    b panic
