@@ -1,6 +1,25 @@
 #include "gpio.h"
 #include "types.h"
 
+struct VideoCoreMailbox
+{
+    reg32 mbox_read;
+    reg32 mbox_poll;
+    reg32 mbox_sender;
+    reg32 mbox_status;
+    reg32 mbox_config;
+    reg32 mbox_write;
+};
+
+#define VIDEOCORE_MAILBOX ((struct VideoCoreMailbox *)(VIDEOCORE_MAILBOX_ADDR))
+
+typedef enum _MailBoxResponse
+{
+    MBox_Response = 0x80000000,
+    MBox_Full = 0x80000000,
+    MBox_Empty = 0x40000000,
+} MailBoxResponse;
+
 struct LocalTimer
 {
     reg32 routing;
@@ -28,7 +47,6 @@ struct SysTimerRegs
 };
 
 #define SYS_TIMER_REGS ((struct SysTimerRegs*)(SYS_TIMER_ADDR))
-
 
 struct AuxRegs
 {

@@ -7,6 +7,9 @@
 u32 cur_val_1 = 0;
 u32 cur_val_3 = 0;
 
+
+// Timer 1 will go off every 1 second
+// Timer 5 will go off every 5 seconds
 void sys_timer_init()
 {
     cur_val_1 = SYS_TIMER_REGS->timer_clo;
