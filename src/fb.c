@@ -3,7 +3,9 @@
 #include "fb.h"
 #include "printf.h"
 
-i32 init_fb(struct FrameBuffer * fb, int pw, int ph, int vw, int vh)
+extern struct FrameBuffer fb;
+
+i32 init_fb(int pw, int ph, int vw, int vh)
 {
     mbox[0] = 35*4;
     mbox[1] = MBOX_REQUEST;
@@ -53,12 +55,36 @@ i32 init_fb(struct FrameBuffer * fb, int pw, int ph, int vw, int vh)
     //the closest supported resolution instead
     if(mbox_call(MBoxChannelPROP) && mbox[20]==32 && mbox[28]!=0) {
         mbox[28]&=0x3FFFFFFF;   //convert GPU address to ARM address
-        fb->width  = mbox[5];          //get actual physical width
-        fb->height = mbox[6];         //get actual physical height
-        fb->pitch  = mbox[33];         //get number of bytes per line
-        fb->isrgb  = mbox[24];         //get the actual channel order
-        fb->ptr    =(void*)((unsigned long)mbox[28]);
+        fb.width  = mbox[5];          //get actual physical width
+        fb.height = mbox[6];         //get actual physical height
+        fb.pitch  = mbox[33];         //get number of bytes per line
+        fb.isrgb  = mbox[24];         //get the actual channel order
+        fb.ptr    =(void*)((unsigned long)mbox[28]);
         return 0;
     }
     return -1;
+}
+
+void clear(u32 color)
+{
+    // Invert R and B channels if in RGB mode
+    if(fb.isrgb)
+    {
+        u32 r = color & 0xFF0000;
+        u32 g = color & 0x00FF00;
+        u32 b = color & 0x0000FF;
+        color = (r >> 16) | g | (b << 16);
+    }
+
+    u32 * cur_pixel = (u32 *) fb.ptr;
+
+    for(int y=0; y<fb.height;++y)
+    {
+        for(int x=0;x < fb.width;++x)
+        {
+            *cur_pixel = color;
+            cur_pixel++;
+        }
+        cur_pixel += fb.pitch - fb.width*4;
+    }
 }

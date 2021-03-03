@@ -4,12 +4,16 @@
 #include "irq.h"
 #include "utils.h"
 #include "fb.h"
+#include "font.h"
 #include "timer.h"
 #include "regstruct.h"
 
+struct FrameBuffer fb;
+
 void kernel_main() 
 {
-    uart_init();
+    uart_init_alt();
+    int fb_status = init_fb(800, 600, 800, 600);
     init_printf(0, putc);
 
     printf("\n\nBooting Raspberry Pi 3\n");
@@ -31,48 +35,32 @@ void kernel_main()
     //local_timer_init();
     //printf("Enabled local timer\n");
     
-    struct FrameBuffer fb;
-    int fb_status = init_fb(&fb, 1024, 600, 1024, 600);
     if(fb_status == 0)
         printf("Initialized framebuffer of size %dx%d\n", fb.width, fb.height);
     else
         printf("Could not initialize framebuffer.\n");
+    
+    
 
     //u32 color = 0x03c6fc;
-    u32 color = 0xfcc603;
-    u32 * cur_pixel = fb.ptr;
-    for(int y=0; y<fb.height;++y)
-    {
-        for(int x=0;x < fb.width;++x)
-        {
-            if(!fb.isrgb)
-            {
-                u32 r = color & 0xFF0000 >> 16;
-                u32 b = color & 0x0000FF;
-                u32 g = color & 0x00FF00 >> 8;
-                color = r << 16 | g | b;
-            }
-            *cur_pixel = color;
-            cur_pixel++;
-        }
-        cur_pixel += fb.pitch - fb.width*4;
-    }
+    u32 color = 0x800000;
+    //clear(&fb, color);
+    fbprint("Hello world!\nSetup done. Running main kernel loop.\n\n");
 
-    printf("\nSetup done. Running main kernel loop.\n\n");
     
     const char* running = "Running..";
     int len = strlen(running);
     char *c = running;
     while(1)
     {
-        if(c < (running+len))
+        /*if(c < (running+len))
             uart_putc(*c++);
         else
         {
             c = running;
             printf("\r           \r");
         }
-        sys_timer_sleep_ms(100);        
+        sys_timer_sleep_ms(100);*/
     }
     
 }
