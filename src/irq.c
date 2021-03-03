@@ -37,7 +37,7 @@ void show_invalid_entry_message(u32 type, u64 esr, u64 address)
 void enable_interrupt_controller()
 {
     // Enable Mini UART + Timer1 + Timer 3
-    REGS_IRQ->irq0_enable_1 = AUX_IRQ;// | TIMER_MATCH1 | TIMER_MATCH3;
+    REGS_IRQ->irq0_enable_1 = AUX_IRQ | TIMER_MATCH1 | TIMER_MATCH3;
 }
 
 void handle_irq()

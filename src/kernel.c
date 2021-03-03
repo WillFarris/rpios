@@ -12,8 +12,7 @@ struct FrameBuffer fb;
 
 void kernel_main() 
 {
-    uart_init_alt();
-    int fb_status = init_fb(800, 600, 800, 600);
+    uart_init_alt();    
     init_printf(0, putc);
 
     printf("\n\nBooting Raspberry Pi 3\n");
@@ -32,9 +31,10 @@ void kernel_main()
     sys_timer_init();
     printf("Enabled system timer\n");
     
-    //local_timer_init();
-    //printf("Enabled local timer\n");
+    local_timer_init();
+    printf("Enabled local timer\n");
     
+    int fb_status = fbinit(800, 600, 800, 600);
     if(fb_status == 0)
         printf("Initialized framebuffer of size %dx%d\n", fb.width, fb.height);
     else
@@ -44,7 +44,7 @@ void kernel_main()
 
     //u32 color = 0x03c6fc;
     u32 color = 0x800000;
-    //clear(&fb, color);
+    fbclear(color);
     fbprint("Hello world!\nSetup done. Running main kernel loop.\n\n");
 
     

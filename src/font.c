@@ -35,7 +35,7 @@ void fbprint(char *s)
                 for(i=0;i<font->width;i++){
                     // if bit set, we use white color, otherwise transparent background
                     u32 col = *(fb.ptr + line);
-                    *((u32*)(fb.ptr + line))=((int)*glyph) & mask?0xFFFFFF:col;
+                    *((u32*)(fb.ptr + line))=((int)*glyph) & mask?0xFFFFFF:fb.bg;
                     mask>>=1;
                     line+=4;
                 }

@@ -3,6 +3,7 @@
 #include "regstruct.h"
 #include "utils.h"
 #include "printf.h"
+#include "font.h"
 
 u32 cur_val_1 = 0;
 u32 cur_val_3 = 0;
@@ -43,7 +44,7 @@ void handle_sys_timer3_irq()
     cur_val_3 += CLOCKHZ * 5;
     SYS_TIMER_REGS->timer_c3 = cur_val_3;
     SYS_TIMER_REGS->timer_cs |= TIMER_CS_M3;
-    printf("TIMER 3 Interrupt\n", cur_val_3);
+    fbprint("TIMER 3 Interrupt (every 5s)\n");
 }
 
 void handle_local_timer_irq()

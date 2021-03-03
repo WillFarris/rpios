@@ -5,7 +5,7 @@
 
 extern struct FrameBuffer fb;
 
-i32 init_fb(int pw, int ph, int vw, int vh)
+i32 fbinit(int pw, int ph, int vw, int vh)
 {
     mbox[0] = 35*4;
     mbox[1] = MBOX_REQUEST;
@@ -65,7 +65,7 @@ i32 init_fb(int pw, int ph, int vw, int vh)
     return -1;
 }
 
-void clear(u32 color)
+void fbclear(u32 color)
 {
     // Invert R and B channels if in RGB mode
     if(fb.isrgb)
@@ -75,6 +75,7 @@ void clear(u32 color)
         u32 b = color & 0x0000FF;
         color = (r >> 16) | g | (b << 16);
     }
+    fb.bg = color;
 
     u32 * cur_pixel = (u32 *) fb.ptr;
 

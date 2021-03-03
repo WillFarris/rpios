@@ -10,8 +10,9 @@ struct FrameBuffer
     u32 isrgb;
     u32 cursor_x;
     u32 cursor_y;
+    u32 bg;
     u8 * ptr;
 };
 
-i32 init_fb(int, int, int, int);
-void clear(u32 color);
+i32 fbinit(int, int, int, int);
+void fbclear(u32 color);
