@@ -1,95 +1,98 @@
 #include "font.h"
 #include "fb.h"
+#include "printf.h"
 
 extern struct FrameBuffer fb;
 
-/**
- * Display a string using fixed size PSF
- */
-void fbprint(char *s)
+void fbputs(const char*s)
 {
-    // get our font
-    psf_t *font = (psf_t*)&_binary_font_psf_start;
-    // draw next character if it's not zero
-    while(*s) {
-        // get the offset of the glyph. Need to adjust this to support unicode table
-        unsigned char *glyph = (unsigned char*)&_binary_font_psf_start +
-         font->headersize + (*((unsigned char*)s)<font->numglyph?*s:0)*font->bytesperglyph;
-        // calculate the offset on screen
-        int offs = (fb.cursor_y * fb.pitch) + (fb.cursor_x * 4);
-        // variables
-        int i,j, line,mask, bytesperline=(font->width+7)/8;
-        // handle carrige return
-        if(*s == '\r') {
+    if(!s) return;
+    char c = *s;
+    while(c)
+    {
+        if(c == '\n')
+        {
+            fb.cursor_y += char_height;
+        } else if (c == '\r')
+        {
             fb.cursor_x = 0;
-        } else
-        // new line
-        if(*s == '\n') {
-            fb.cursor_x = 0; fb.cursor_y += font->height;
-        } else {
-            // display a character
-            for(j=0;j<font->height;j++){
-                // display one row
-                line=offs;
-                mask=1<<(font->width-1);
-                for(i=0;i<font->width;i++){
-                    // if bit set, we use white color, otherwise transparent background
-                    u32 col = *(fb.ptr + line);
-                    *((u32*)(fb.ptr + line))=((int)*glyph) & mask?0xFFFFFF:fb.bg;
-                    mask>>=1;
-                    line+=4;
+        }else
+        {
+            c -= 0x20;
+            int cy = c / cols;
+            int cx = c % cols;
+            char *data = fontmap_data + (cy * fontmap_width * char_height) + (cx * char_width);
+            char pixel[4];
+            u32 * cur_pixel = (u32 *) fb.ptr + fb.cursor_x + (fb.width * fb.cursor_y);
+            for(int y=0; y<char_height;++y)
+            {
+                for(int x=0;x < char_width;++x)
+                {
+                    HEADER_PIXEL(data, pixel);
+                    u32 val = *((u32 *)&pixel);
+                    if(val != 0)
+                        *cur_pixel = val;
+                    else
+                        *cur_pixel = fb.bg;
+                    cur_pixel++;
                 }
-                // adjust to next line
-                glyph+=bytesperline;
-                offs+=fb.pitch;
+                data += fontmap_width - char_width;
+                cur_pixel += fb.width - char_width;
             }
-            fb.cursor_x += (font->width+1);
+            if(fb.cursor_x < (fb.width - char_width))
+                fb.cursor_x += char_width;
+            else
+            {
+                fb.cursor_x = 0;
+                fb.cursor_y += char_height;
+            }
         }
-        // next character
-        s++;
+        c = *(++s);
     }
 }
 
-void fbputc_printf(void *p, char c)
+void pf_fbputc(void *p, char c)
 {
+    if(c == '\n')
+        fbputc('\r');
     fbputc(c);
 }
 
 void fbputc(char c)
 {
-    // get our font
-    psf_t *font = (psf_t*)&_binary_font_psf_start;
-    // get the offset of the glyph. Need to adjust this to support unicode table
-    unsigned char *glyph = (unsigned char*)&_binary_font_psf_start +
-    font->headersize + (c < font->numglyph ? c : 0)*font->bytesperglyph;
-    // calculate the offset on screen
-    int offs = (fb.cursor_y * fb.pitch) + (fb.cursor_x * 4);
-    // variables
-    int i,j, line,mask, bytesperline=(font->width+7)/8;
-    // handle carrige return
-    if(c == '\r') {
+    if(c == '\n')
+    {
+        fb.cursor_y += char_height;
+    } else if (c == '\r')
+    {
         fb.cursor_x = 0;
     } else
-    // new line
-    if(c == '\n') {
-        fb.cursor_x = 0; fb.cursor_y += font->height;
-    } else {
-        // display a character
-        for(j=0;j<font->height;j++){
-            // display one row
-            line=offs;
-            mask=1<<(font->width-1);
-            for(i=0;i<font->width;i++){
-                // if bit set, we use white color, otherwise transparent background
-                u32 col = *(fb.ptr + line);
-                *((u32*)(fb.ptr + line))=((int)*glyph) & mask?0xFFFFFF:col;
-                mask>>=1;
-                line+=4;
+    {
+        c -= 0x20;
+        int cy = c / cols;
+        int cx = c % cols;
+        char *data = fontmap_data + (cy * fontmap_width * char_height) + (cx * char_width);
+        char pixel[4];
+        u32 * cur_pixel = (u32 *) fb.ptr + fb.cursor_x + (fb.width * fb.cursor_y);
+        for(int y=0; y<char_height;++y)
+        {
+            for(int x=0;x < char_width;++x)
+            {
+                HEADER_PIXEL(data, pixel);
+                u32 val = *((u32 *)&pixel);
+                if(val != 0)
+                    *cur_pixel = val;
+                cur_pixel++;
             }
-            // adjust to next line
-            glyph+=bytesperline;
-            offs+=fb.pitch;
+            data += fontmap_width - char_width;
+            cur_pixel += fb.width - char_width;
         }
-        fb.cursor_x += (font->width+1);
+        if(fb.cursor_x < (fb.width - char_width))
+            fb.cursor_x += char_width;
+        else
+        {
+            fb.cursor_x = 0;
+            fb.cursor_y += char_height;
+        }
     }
 }

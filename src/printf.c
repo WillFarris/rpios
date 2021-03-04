@@ -20,6 +20,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 #include "printf.h"
+#include "font.h"
 
 typedef void (*putcf) (void*,char);
 static putcf stdout_putf;
@@ -213,6 +214,14 @@ void tfp_printf(char *fmt, ...)
     va_list va;
     va_start(va,fmt);
     tfp_format(stdout_putp,stdout_putf,fmt,va);
+    va_end(va);
+    }
+
+void fbprintf(char *fmt, ...)
+    {
+    va_list va;
+    va_start(va,fmt);
+    tfp_format(0,pf_fbputc,fmt,va);
     va_end(va);
     }
 
