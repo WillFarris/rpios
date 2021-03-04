@@ -1,5 +1,6 @@
 #include "mini_uart.h"
 #include "regstruct.h"
+#include "font.h"
 
 #define TXD 14
 #define RXD 15
@@ -62,7 +63,9 @@ void uart_puts(const char * s)
 void uart_putc(const char c)
 {
     if(c == '\n')
+    {
         uart_putc('\r');
+    }
     while(!(REGS_AUX->mu_lsr & 0x20));
     REGS_AUX->mu_io = c;
 }

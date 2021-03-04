@@ -17,7 +17,6 @@ clean:
 $(BUILD_DIR)/%_c.o: $(SRC_DIR)/%.c
 	mkdir -p $(@D)
 	$(ARMGNU)-gcc $(C_OPS) -MMD -c $< -o $@
-	$(ARMGNU)-ld -m aarch64elf -r -b binary -o $(BUILD_DIR)/font_psf.o font.psf
 
 $(BUILD_DIR)/%_s.o: $(SRC_DIR)/%.S
 	mkdir -p $(@D)
@@ -42,7 +41,7 @@ gdb:
 
 kernel8.img: $(SRC_DIR)/linker.ld $(OBJ_FILES)
 	mkdir -p $(BUILD_DIR)
-	$(ARMGNU)-ld -T $(SRC_DIR)/linker.ld -o $(BUILD_DIR)/kernel8.elf $(BUILD_DIR)/font_psf.o $(OBJ_FILES)
+	$(ARMGNU)-ld -T $(SRC_DIR)/linker.ld -o $(BUILD_DIR)/kernel8.elf $(OBJ_FILES)
 	$(ARMGNU)-objcopy $(BUILD_DIR)/kernel8.elf -O binary kernel8.img
 
 armstub/build/armstub_s.o: armstub/armstub.S

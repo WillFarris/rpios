@@ -6,6 +6,8 @@
 #include "mini_uart.h"
 #include "timer.h"
 
+#include "font.h"
+
 const char entry_error_messages[16][32] =
 {
     "SYNC_INVALID_EL1t",
@@ -53,8 +55,8 @@ void handle_irq()
             {
                 char c = uart_getc();
                 if(c == '\r')
-                    uart_putc('\n');
-                uart_putc(c);
+                    fbputc('\n');
+                fbputc(c);
             }
         }
 

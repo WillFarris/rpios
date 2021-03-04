@@ -14,5 +14,8 @@ struct FrameBuffer
     u8 * ptr;
 };
 
-i32 fbinit(int, int, int, int);
+i32 fbinit(int, int);
 void fbclear(u32 color);
+void fbrainbow();
+
+extern struct FrameBuffer fb;

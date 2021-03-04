@@ -8,6 +8,9 @@
 #include "timer.h"
 #include "regstruct.h"
 
+#include "mem.h"
+#include "reg.h"
+
 struct FrameBuffer fb;
 
 void kernel_main() 
@@ -15,52 +18,48 @@ void kernel_main()
     uart_init_alt();    
     init_printf(0, putc);
 
-    printf("\n\nBooting Raspberry Pi 3\n");
+    int fb_status = fbinit(1024, 600);
+    fb.bg = 0x800000;
+    fbclear(fb.bg);
+
+    fbprintf("Booted Raspberry Pi 3\n");
     
-    printf("\nRunning on core %d\nWe are in EL%d\n\n", get_core(), get_el());
+    fbprintf("\nRunning on core %d\nWe are in EL%d\n\n", get_core(), get_el());
 
     irq_init_vectors();
-    printf("IRQ vector table initalized\n");
+    fbprintf("IRQ vector table initalized\n");
     
     enable_interrupt_controller();
-    printf("Interrupt controller initialized\n");
+    fbprintf("Interrupt controller initialized\n");
     
     irq_enable();
-    printf("Enabled IRQ interrupts\n");
+    fbprintf("Enabled IRQ interrupts\n");
     
     sys_timer_init();
-    printf("Enabled system timer\n");
+    fbprintf("Enabled system timer\n");
     
     local_timer_init();
-    printf("Enabled local timer\n");
-    
-    int fb_status = fbinit(800, 600, 800, 600);
-    if(fb_status == 0)
-        printf("Initialized framebuffer of size %dx%d\n", fb.width, fb.height);
-    else
-        printf("Could not initialize framebuffer.\n");
-    
-    
+    printf("Enabled local timer on core %d\n", get_core());
 
-    //u32 color = 0x03c6fc;
-    u32 color = 0x800000;
-    fbclear(color);
-    fbprint("Hello world!\nSetup done. Running main kernel loop.\n\n");
+    printf("FrameBuffer:\n  width: %d\n  height: %d\n  pitch: %d\n  isrgb: %d\n  ptr: %X\n", fb.width, fb.height, fb.pitch, fb.isrgb, fb.ptr);
 
+    fbprintf("\nStack starts at: 0x%X\n", LOW_MEMORY);
+
+    fbprintf("\nSetup done. Running main kernel loop.\n\n");
     
     const char* running = "Running..";
     int len = strlen(running);
     char *c = running;
+    int dy = 0;
     while(1)
     {
         /*if(c < (running+len))
-            uart_putc(*c++);
+            fbputc(*c++);
         else
         {
             c = running;
-            printf("\r           \r");
+            fbputs("\r           \r");
         }
         sys_timer_sleep_ms(100);*/
     }
-    
 }
