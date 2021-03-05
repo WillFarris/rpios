@@ -57,8 +57,6 @@ i32 fbinit(int pw, int ph)
         fb.height = mbox[6];         //get actual physical height
         fb.pitch  = mbox[33];         //get number of bytes per line
         fb.isrgb  = mbox[24];         //get the actual channel order
-        fb.cursor_x = 0;
-        fb.cursor_y = 0;
         fb.ptr    =(void*)((unsigned long)mbox[28]);
         return 0;
     }
@@ -76,7 +74,9 @@ void fbclear(u32 color)
         color = (r >> 16) | g | (b << 16);
     }
     fb.bg = color;
-
+    fb.cursor_x = 0;
+    fb.cursor_y = 0;
+    
     u32 * cur_pixel = (u32 *) fb.ptr;
 
     for(int y=0; y<fb.height;++y)

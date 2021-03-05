@@ -21,6 +21,7 @@ const static unsigned int ascii_offset = 0x20;
 pixel[0] = header_data_cmap[(unsigned char)data[0]][0]; \
 pixel[1] = header_data_cmap[(unsigned char)data[0]][1]; \
 pixel[2] = header_data_cmap[(unsigned char)data[0]][2]; \
+pixel[3] = 0; \
 data ++; }
 
 static unsigned char header_data_cmap[256][3] = {

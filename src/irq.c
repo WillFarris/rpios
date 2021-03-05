@@ -8,6 +8,8 @@
 
 #include "font.h"
 
+extern void shell();
+
 const char entry_error_messages[16][32] =
 {
     "SYNC_INVALID_EL1t",
@@ -53,10 +55,7 @@ void handle_irq()
             irq &= ~AUX_IRQ;
             while((REGS_AUX->mu_iir & 4) == 4)
             {
-                char c = uart_getc();
-                if(c == '\r')
-                    fbputc('\n');
-                fbputc(c);
+                shell();
             }
         }
 
