@@ -8,12 +8,6 @@
 
 void exec(char **args)
 {
-    int i=0;
-    while(args[i])
-    {
-        printf("Arg %d: %s\n", i, args[i]);
-        ++i;
-    }
     if(strcmp(args[0], "gcd") == 0)
     {
         u64 a = strtol(args[1]);
