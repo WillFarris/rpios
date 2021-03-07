@@ -89,3 +89,35 @@ void fbclear(u32 color)
         cur_pixel += fb.pitch - fb.width*4;
     }
 }
+
+void fbsetres(u64 w, u64 h)
+{
+    mbox[0] = 17*4;
+    mbox[1] = MBOX_REQUEST;
+
+    mbox[2] = 0x00048003;
+    mbox[3] = 8;
+    mbox[4] = 8;
+    mbox[5] = w;
+    mbox[6] = h;
+
+    mbox[7] = 0x40008;     //get pitch
+    mbox[8] = 4;
+    mbox[9] = 4;
+    mbox[10] = 0;           //FrameBufferInfo.pitch
+
+    mbox[11] = 0x40001;     //get framebuffer, gets alignment on request
+    mbox[12] = 8;
+    mbox[13] = 8;
+    mbox[14] = 4096;        //FrameBufferInfo.pointer
+    mbox[15] = 0;           //FrameBufferInfo.size
+
+    mbox[16] = MBOX_TAG_LAST;
+
+    if(mbox_call(MBoxChannelPROP)) {
+        fb.width  = mbox[5];          //get actual physical width
+        fb.height = mbox[6];         //get actual physical height
+        fb.pitch = mbox[10];
+        fb.ptr = (void*)((unsigned long)mbox[14]);
+    }
+}
