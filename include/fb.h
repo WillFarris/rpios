@@ -2,6 +2,9 @@
 
 #include "types.h"
 
+#define DISPLAY_WIDTH 800 
+#define DISPLAY_HEIGHT 600
+
 struct FrameBuffer
 {
     u32 width;
@@ -17,5 +20,6 @@ struct FrameBuffer
 i32 fbinit(int, int);
 void fbclear(u32 color);
 void fbrainbow();
+void fbsetres(u64, u64);
 
 extern struct FrameBuffer fb;
