@@ -16,6 +16,16 @@ get32:
     ldr w0, [x0]
     ret
 
+.globl put64
+put64:
+    str x1, [x0]
+    ret
+
+.globl get64
+get64:
+    ldr x0, [x0]
+    ret
+
 .globl memzero
 memzero:
     str xzr, [x0], #8

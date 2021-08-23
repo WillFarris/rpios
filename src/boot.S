@@ -22,7 +22,7 @@ _start:
     ldr x0, =SCR_VALUE
     msr scr_el3, x0
 
-    ldr x0, =SPSR_VALUE
+    ldr x0, =SPSR_EL3_TO_EL1h
     msr spsr_el3, x0
 
     adr x0, el1_entry

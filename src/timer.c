@@ -36,7 +36,7 @@ void handle_sys_timer1_irq()
     cur_val_1 += CLOCKHZ;
     SYS_TIMER_REGS->timer_c1 = cur_val_1;
     SYS_TIMER_REGS->timer_cs |= TIMER_CS_M1;
-    //printf("TIMER 1 Interrupt\n", cur_val_1);
+    printf("TIMER 1 Interrupt\n", cur_val_1);
 }
 
 void handle_sys_timer3_irq()
@@ -44,7 +44,7 @@ void handle_sys_timer3_irq()
     cur_val_3 += CLOCKHZ * 5;
     SYS_TIMER_REGS->timer_c3 = cur_val_3;
     SYS_TIMER_REGS->timer_cs |= TIMER_CS_M3;
-    //printf("TIMER 3 Interrupt (every 5s)\n");
+    printf("TIMER 3 Interrupt (every 5s)\n");
 }
 
 void handle_local_timer_irq()
