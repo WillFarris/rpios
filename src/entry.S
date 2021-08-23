@@ -67,7 +67,7 @@ vectors:
     ventry error_invalid_el1t
     
     ventry sync_invalid_el1h
-    ventry el1_irq
+    ventry irq_el1
     ventry fiq_invalid_el1h
     ventry error_invalid_el1h
 
@@ -119,7 +119,25 @@ vectors:
     handle_invalid_entry error_invalid_el0_32
 
 
-el1_irq:
+irq_el1:
    kernel_entry
    bl handle_irq
    kernel_exit
+
+
+.globl enter_el0
+enter_el0:
+   mov x0, #2097152
+   msr sp_el0, x0
+
+   ldr x0, #240
+   msr spsr_el1, x0
+
+   adr x0, el0_entry
+   msr elr_el1, x0
+   eret
+
+.globl el0_entry1
+el0_entry1:
+   adds x0, x0, #1
+   b el0_entry

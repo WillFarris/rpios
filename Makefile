@@ -1,8 +1,8 @@
 include gccpath.mk
 ARMGNU ?= $(ARMPATH)aarch64-none-elf
 
-C_OPS = -Wall -nostdlib -nostartfiles -ffreestanding -mgeneral-regs-only -g -Iinclude
-ASM_OPS = -g -Iinclude
+C_OPS = -Wall -nostdlib -nostartfiles -ffreestanding -mgeneral-regs-only -g -Iheaders
+ASM_OPS = -g -Iheaders
 QEMU_OPS = -s -M raspi3 -cpu cortex-a53 -serial null -serial stdio
 
 BUILD_DIR = build

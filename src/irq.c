@@ -41,7 +41,7 @@ void show_invalid_entry_message(u32 type, u64 esr, u64 address)
 void enable_interrupt_controller()
 {
     // Enable Mini UART + Timer1 + Timer 3
-    REGS_IRQ->irq0_enable_1 = TIMER_MATCH1 | TIMER_MATCH3;// | AUX_IRQ
+    REGS_IRQ->irq0_enable_1 = TIMER_MATCH1 | TIMER_MATCH3 | AUX_IRQ;
 }
 
 void handle_irq()
@@ -55,6 +55,7 @@ void handle_irq()
             irq &= ~AUX_IRQ;
             while((REGS_AUX->mu_iir & 4) == 4)
             {
+                fbputc(uart_getc());
                 //shell();
             }
         }

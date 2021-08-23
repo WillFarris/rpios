@@ -36,4 +36,9 @@
 
 #define SPSR_MASK_ALL 		(7 << 6)
 #define SPSR_EL1h			(5 << 0)
-#define SPSR_VALUE			(SPSR_MASK_ALL | SPSR_EL1h)
+#define SPSR_EL3_TO_EL1h	(SPSR_MASK_ALL | SPSR_EL1h)
+
+
+
+#define SPSR_EL0t			(0 << 0)
+#define SPSR_EL1h_TO_EL0t	(SPSR_MASK_ALL | SPSR_EL0t)
