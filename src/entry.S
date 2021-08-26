@@ -125,7 +125,7 @@ irq_el1:
    kernel_exit
 
 
-.globl enter_el0
+/*.globl enter_el0
 enter_el0:
    mov x0, #2097152
    msr sp_el0, x0
@@ -140,4 +140,4 @@ enter_el0:
 .globl el0_entry1
 el0_entry1:
    adds x0, x0, #1
-   b el0_entry
+   b el0_entry*/
