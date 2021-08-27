@@ -18,6 +18,11 @@ u64 phi(u64 n)
     return result; 
 }
 
+
+u64 mod(u64 a, u64 b) {
+    return a % b;
+}
+
 u64 floor_sqrt(u64 x) 
 { 
     // Base cases 

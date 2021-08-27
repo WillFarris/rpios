@@ -7,20 +7,20 @@
 
 .globl _start
 _start:
-    mrs x0, mpidr_el1
-    and x0, x0, #0x3
+    mrs x5, mpidr_el1
+    and x5, x5, #0x3
 
-    cmp x0, #0
+    cmp x5, #0
     beq core0_stack
     
-    cmp x0, #1
+    cmp x5, #1
     beq core1_stack
     
-    cmp x0, #2
-    beq hang
+    cmp x5, #2
+    beq core2_stack
     
-    cmp x0, #3
-    beq hang
+    cmp x5, #3
+    beq core3_stack
 
 hang:
     wfe
@@ -50,10 +50,7 @@ core3_stack:
 set_stack:
     msr sp_el0, x2
     msr sp_el1, x3
-    //msr sp_el2, x4
-
-    cmp x0, #MASTER_CORE
-    bne slave_core_sleep
+    msr sp_el2, x4
 
     ldr x0, =SCTLR_VALUE_MMU_DISABLED
     msr sctlr_el1, x0  
@@ -67,46 +64,48 @@ set_stack:
     ldr x0, =SPSR_EL3_TO_EL1h
     msr spsr_el3, x0
 
-    adr x0, el1_entry_master_core
+    adr x0, el1_entry
     msr elr_el3, x0
 
     eret
 
-el1_entry_master_core:
+el1_entry:
+    bl irq_init_vectors
+
+    cmp x5, #MASTER_CORE
+    bne slave_core_sleep
+
     adr x0, bss_begin
     adr x1, bss_end
     sub x1, x1, x0
     bl memzero
-    
-    bl irq_init_vectors
-    
     bl kernel_main
+    b hang
 
 .balign 4
 slave_core_sleep:
     wfe
-    mrs x0, mpidr_el1
-    and x0, x0, #3
-    ldr x1, =CPU_CORE0_MAILBOX_READ
-    mov x3, #16
-    mul x2, x0, x3
-    add x1, x1, x2
-
-    ldr x1, [x1]
+	mov	x2, 204
+	movk x2, 0x4000, lsl 16 //0x400000CC
+	mrs x0, mpidr_el1
+	ubfiz x0, x0, 4, 4
+	ldr	w1, [x0, x2]
+	cbz w1, slave_core_sleep
+    str w1, [x0, x2]
     
     dmb sy // data memory buffer
     blr x1 //branch and link to register
     dmb sy
+    b hang
     b slave_core_sleep
 
 .globl core_execute
 core_execute:
     dmb sy
-    mov x3, #16
-    mul x0, x0, x3
-    ldr x2, =CPU_CORE0_MAILBOX_WRITE
-    add x2, x2, x0
-    str w1, [x2]
+    ubfiz x0, x0, 2, 8
+    mov x2, 140
+    movk x2, 0x4000, lsl 16
+    str w1, [x2, x0, lsl 2]
     sev
     dmb sy
     ret

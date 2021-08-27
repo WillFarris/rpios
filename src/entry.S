@@ -124,20 +124,10 @@ irq_el1:
    bl handle_irq
    kernel_exit
 
-
-/*.globl enter_el0
+// x0: address of function to call in el0
+.globl enter_el0
 enter_el0:
-   mov x0, #2097152
-   msr sp_el0, x0
-
-   ldr x0, #240
-   msr spsr_el1, x0
-
-   adr x0, el0_entry
+   ldr x1, #240
+   msr spsr_el1, x1
    msr elr_el1, x0
    eret
-
-.globl el0_entry1
-el0_entry1:
-   adds x0, x0, #1
-   b el0_entry*/
