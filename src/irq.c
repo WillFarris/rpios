@@ -35,13 +35,13 @@ const char entry_error_messages[16][32] =
 
 void show_invalid_entry_message(u32 type, u64 esr, u64 address)
 {
-    printf("ERROR CAUGHT: %s - %d, ESR: %X, Address: %X\n", entry_error_messages[type], esr, address);
+    printf("ERROR CAUGHT: %s - %d, ESR: 0x%X, Address: 0x%X\n", entry_error_messages[type], esr, address);
 }
 
 void enable_interrupt_controller()
 {
     // Timer1 + Timer 3 + Mini UART
-    REGS_IRQ->irq0_enable_1 = TIMER_MATCH1 | TIMER_MATCH3 | AUX_IRQ;
+    REGS_IRQ->irq0_enable_1 = TIMER_MATCH1 | TIMER_MATCH3;// | AUX_IRQ;
 }
 
 void handle_irq()

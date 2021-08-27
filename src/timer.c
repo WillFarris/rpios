@@ -24,9 +24,11 @@ void sys_timer_init()
 
 void local_timer_init()
 {
+    u8 core = get_core();
     u8 fiq = 0;
+
     LOCAL_TIMER->timer_control_core0 = 0xF;
-    LOCAL_TIMER->routing = get_core() + (fiq * 4);
+    LOCAL_TIMER->routing = core + (fiq * 4);
     LOCAL_TIMER->control_status = (1 << 29) | (1 << 28) | LOCAL_TIMER_RELOAD;
     LOCAL_TIMER->set_clear_reload = (0x3 << 30);
 }

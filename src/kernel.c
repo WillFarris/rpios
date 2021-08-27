@@ -14,7 +14,15 @@
 struct FrameBuffer fb;
 
 void print_core() {
-    printf("Hello world from core %d\n", get_core());
+    u8 core = get_core();
+    u8 el = get_el();
+    fbprintf("Hello world from core %d in EL%d\n", core, el);
+}
+
+extern void enter_el0(void *func);
+
+void print_core_el0() {
+    enter_el0(print_core);
 }
 
 void kernel_main() 
@@ -22,28 +30,36 @@ void kernel_main()
     uart_init_alt();    
     init_printf(0, putc);
 
-    int fb_status = fbinit(DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    fbinit(DISPLAY_WIDTH, DISPLAY_HEIGHT);
     u32 bg = 0x800000;
     fbclear(bg);
 
-    printf("Booted Raspberry Pi 3 on core %d\nWe are in EL%d\n\n", get_core(), get_el());
+    fbprintf("Booting Raspberry Pi 3\n\n");
     
     enable_interrupt_controller();
-    printf("Interrupt controller initialized\n");
+    fbprintf("Interrupt controller initialized\n");
     
     irq_enable();
-    printf("Enabled IRQ interrupts\n");
+    fbprintf("Enabled IRQ interrupts\n");
     
-    sys_timer_init();
-    fbprintf("Enabled system timer\n");
+    //sys_timer_init();
+    //fbprintf("Enabled system timer\n");
     
     //local_timer_init();
     //printf("Enabled local timer on core %d\n", get_core());
     
-    printf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: 0x%X\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, fb.bg, fb.ptr);
+    fbprintf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: 0x%X\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, fb.bg, fb.ptr);
     
-
+    
+    print_core();
+    delay(10000);
     core_execute(1, print_core);
+    delay(10000);
+    core_execute(2, print_core);
+    delay(50000);
+    core_execute(3, print_core);
 
-    shell();
+    while(1) {}
+
+    //shell();
 }

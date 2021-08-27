@@ -6,31 +6,34 @@
 #include "fb.h"
 #include "printf.h"
 
+#define print_console fbprintf
+#define print_console_c fbputc
+
 void exec(char **args)
 {
     if(strcmp(args[0], "gcd") == 0)
     {
         u64 a = strtol(args[1]);
         u64 b = strtol(args[2]);
-        fbprintf("%d\n> ", gcd(a, b));
+        print_console("%d\n> ", gcd(a, b));
     } else if(strcmp(args[0], "phi") == 0)
     {
         u64 n = strtol(args[1]);
-        fbprintf("%d\n> ", phi(n));
+        print_console("%d\n> ", phi(n));
     } else if (strcmp(args[0], "primefactors") == 0)
     {
         u64 n = strtol(args[1]);
         prime_factors(n);
-        fbprintf("\n> ");
+        print_console("\n> ");
     } else if(strcmp(args[0], "clear") == 0)
     {
         fbclear(0x800000);
-        fbprintf("> ");
+        print_console("> ");
     } else if(strcmp(args[0], "mod") == 0)
     {
         u64 a = strtol(args[1]);
         u64 b = strtol(args[2]);
-        fbprintf("%d\n> ", a % b);
+        print_console("%d\n> ", a % b);
     }  else if(strcmp(args[0], "setres") == 0)
     {
         u64 w = strtol(args[1]);
@@ -38,7 +41,7 @@ void exec(char **args)
         fbsetres(w, h);
     } else
     {
-        fbprintf("Unknown command: %s\n> ", args[0]);
+        print_console("Unknown command: %s\n> ", args[0]);
     }
 }
 
@@ -63,13 +66,15 @@ void parse_command(char *str, char **args)
     exec(args);
 }
 
+
+
 void shell()
 {
     char commandbuffer[DISPLAY_WIDTH];
     char * args[10];
     char *cur = commandbuffer;
 
-    fbprintf("\n> ");
+    print_console("\n> ");
     while(1)
     {
         char c = uart_getc();
@@ -79,20 +84,20 @@ void shell()
                 fb.cursor_x -= char_width;
                 *(--cur) = 0;
                 --cur;
-                fbputc(' ');
+                print_console_c(' ');
                 fb.cursor_x -= char_width;
                 break;
             case '\r':
-                fbputc('\n');
-                fbputc('\r');
-                fbputc('>');
-                fbputc(' ');
+                print_console_c('\n');
+                print_console_c('\r');
+                print_console_c('>');
+                print_console_c(' ');
                 *cur = 0;
                 cur = commandbuffer;
                 parse_command(commandbuffer, args);
                 break;
             default:
-                fbputc(c);
+                print_console_c(c);
                 *cur = c;
                 break;
         }

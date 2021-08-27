@@ -3,8 +3,7 @@
 #include "fb.h"
 #include "printf.h"
 
-i32 fbinit(int pw, int ph)
-{
+i32 fbinit(int pw, int ph) {
     mbox[0] = 35*4;
     mbox[1] = MBOX_REQUEST;
 
@@ -63,8 +62,7 @@ i32 fbinit(int pw, int ph)
     return -1;
 }
 
-void fbclear(u32 color)
-{
+void fbclear(u32 color) {
     // Invert R and B channels if in RGB mode
     if(fb.isrgb)
     {
@@ -90,8 +88,7 @@ void fbclear(u32 color)
     }
 }
 
-void fbsetres(u64 w, u64 h)
-{
+void fbsetres(u64 w, u64 h) {
     mbox[0] = 17*4;
     mbox[1] = MBOX_REQUEST;
 
