@@ -13,16 +13,14 @@
 
 struct FrameBuffer fb;
 
-void print_core() {
+
+int printf_lock = 0;
+
+void core_welcome() {
     u8 core = get_core();
-    u8 el = get_el();
-    fbprintf("Hello world from core %d in EL%d\n", core, el);
-}
+    u64 sp = get_sp();
 
-extern void enter_el0(void *func);
-
-void print_core_el0() {
-    enter_el0(print_core);
+    fbprintf("Core %d online with sp=0x%X\n", core, sp);
 }
 
 void kernel_main() 
@@ -50,14 +48,16 @@ void kernel_main()
     
     fbprintf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: 0x%X\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, fb.bg, fb.ptr);
     
+
+    fbprintf("Here are the available cores:\n\n");
     
-    print_core();
-    delay(10000);
-    core_execute(1, print_core);
-    delay(10000);
-    core_execute(2, print_core);
-    delay(50000);
-    core_execute(3, print_core);
+    core_welcome();
+    delay(100000000);
+    core_execute(1, core_welcome);
+    delay(100000000);
+    core_execute(2, core_welcome);
+    delay(100000000);
+    core_execute(3, core_welcome);
 
     while(1) {}
 
