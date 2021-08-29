@@ -46,6 +46,11 @@ get_core:
     and x0, x0, #0xFF
     ret
 
+.globl get_sp
+get_sp:
+    mov x0, sp
+    ret
+
 .globl sys_timer_get_ticks
 sys_timer_get_ticks:
     ldr	x0, =SYS_TIMER_ADDR

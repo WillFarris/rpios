@@ -22,8 +22,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "printf.h"
 #include "font.h"
 
-int fbspinlock = 1;
-int cspinlock = 1;
 
 typedef void (*putcf) (void*,char);
 static putcf stdout_putf;
@@ -210,29 +208,21 @@ void init_printf(void* putp,void (*putf) (void*,char))
     {
     stdout_putf=putf;
     stdout_putp=putp;
-    cspinlock = 0;
-    fbspinlock = 0;
     }
 
 void tfp_printf(char *fmt, ...) {
-    while(cspinlock) {}
-    cspinlock = 1;
     va_list va;
     va_start(va,fmt);
     tfp_format(stdout_putp,stdout_putf,fmt,va);
     va_end(va);
-    cspinlock = 0;
 }
 
 
 void fbprintf(char *fmt, ...) {
-    while(fbspinlock){}
-    fbspinlock = 1;
     va_list va;
     va_start(va,fmt);
     tfp_format(0,pf_fbputc,fmt,va);
     va_end(va);
-    fbspinlock = 0;
 }
 
 static void putcp(void* p,char c)
