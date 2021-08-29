@@ -1,3 +1,5 @@
+// Boots the Pi 3 into EL3 to maintain consistency with QEMU
+
 .globl _start
 _start:
     ldr w0, kernel_entry32
