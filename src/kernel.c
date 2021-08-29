@@ -8,6 +8,7 @@
 #include "timer.h"
 #include "regstruct.h"
 #include "math.h"
+#include "process.h"
 
 #include "reg.h"
 
