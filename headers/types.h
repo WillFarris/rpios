@@ -10,3 +10,4 @@ typedef uint64_t u64;
 typedef int32_t i32;
 
 typedef volatile u32 reg32;
+typedef volatile u64 reg64;

@@ -71,6 +71,7 @@ set_stack:
 
 el1_entry:
     bl irq_init_vectors
+    bl irq_enable
 
     cmp x5, #MASTER_CORE
     bne slave_core_sleep
@@ -96,8 +97,8 @@ slave_core_sleep:
     dmb sy // data memory buffer
     blr x1 //branch and link to register
     dmb sy
-    b hang
     b slave_core_sleep
+    ret
 
 .globl core_execute
 core_execute:

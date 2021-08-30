@@ -7,7 +7,7 @@
 #define LOCAL_TIMER_RELOAD (0x249F000 << 2) // 38.4MHz / (38400000/4) = 0.25Hz
 
 void sys_timer_init();
-void local_timer_init();
+void local_timer_init(reg32, u8);
 void handle_sys_timer1_irq();
 void handle_sys_timer3_irq();
 void handle_local_timer_irq();

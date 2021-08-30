@@ -60,14 +60,14 @@ void handle_irq()
             }
         }
 
-        // This timer is not supported on QEMU
+        // This timer was previously not supported on QEMU
         if(irq & TIMER_MATCH1)
         {
             irq &= ~TIMER_MATCH1;
             handle_sys_timer1_irq();
         }
 
-        // This timer is not supported on QEMU
+        // This timer was previously not supported on QEMU
         if(irq & TIMER_MATCH3)
         {
             irq &= ~TIMER_MATCH3;

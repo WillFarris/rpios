@@ -1,6 +1,34 @@
 #include "gpio.h"
 #include "types.h"
 
+struct QA7Registers
+{
+    reg32 control_register;
+    reg32 unused0;
+    reg32 core_timer_prescaler;
+    reg32 gpu_interrupts_routing;
+    reg32 perf_monitor_interrupts_routing_set;
+    reg32 perf_monitor_interrupts_routing_clear;
+    reg32 unused1;
+    reg32 core_timer_access_ls;
+    reg32 core_timer_access_ms;
+    reg32 local_interrupt_0_routing;
+    reg32 local_interrupts_5_18_routing;
+    reg32 axi_outstanding_counters;
+    reg32 axi_outstanding_irq;
+    reg32 local_timer_ctrl_and_status;
+    reg32 local_timer_write_flags;
+    reg32 unused2;
+    reg32 core_timer_interrupt_control[4];
+    reg32 core_mailbox_interrupt_control[4];
+    reg32 core_irq_source[4];
+    reg32 core_fiq_source[4];
+    reg32 core_mailbox_write_set[4][4];
+    reg32 core_mailbox_read_write_to_clear[4][4];
+};
+
+#define QA7 ((struct QA7Registers *)(QA7_REGISTER_ADDR))
+
 struct VideoCoreMailbox
 {
     reg32 mbox_read;
