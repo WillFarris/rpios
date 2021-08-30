@@ -60,6 +60,11 @@ sys_timer_get_ticks:
     orr x0, x0, x1
     ret
 
+.globl wfe
+wfe:
+    wfe
+    ret
+
 .globl panic
 panic:
     b panic

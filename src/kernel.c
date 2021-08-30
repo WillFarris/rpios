@@ -9,19 +9,20 @@
 #include "regstruct.h"
 #include "math.h"
 #include "process.h"
+#include "shell.h"
 
 #include "reg.h"
 
 struct FrameBuffer fb;
 
-
-int printf_lock = 0;
-
 void core_welcome() {
     u8 core = get_core();
     u64 sp = get_sp();
-
     fbprintf("Core %d online with sp=0x%X\n", core, sp);
+}
+
+void test69() {
+    printf("test\n");
 }
 
 void kernel_main() 
@@ -38,29 +39,33 @@ void kernel_main()
     enable_interrupt_controller();
     fbprintf("Interrupt controller initialized\n");
     
-    irq_enable();
-    fbprintf("Enabled IRQ interrupts\n");
-    
-    //sys_timer_init();
-    //fbprintf("Enabled system timer\n");
-    
-    //local_timer_init();
-    //printf("Enabled local timer on core %d\n", get_core());
-    
-    fbprintf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: 0x%X\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, fb.bg, fb.ptr);
-    
+    sys_timer_init();
+    fbprintf("Enabled system timer\n");
 
-    fbprintf("Here are the available cores:\n\n");
+    //reg32 local_timer_core = 3;
+    //local_timer_init(local_timer_core, 0); // route to core local_timer_core IRQ (fiq = false)
+    //fbprintf("Enabled local timer routing to core %d\n", local_timer_core);
     
+    u8 red = fb.bg >> 16 & 0xFF;
+    u8 green = fb.bg >> 8 & 0xFF;
+    u8 blue = fb.bg & 0xFF;
+    fbprintf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: r=%d, g=%d, b=%d\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, red, green, blue, fb.ptr);
+    
+    fbprintf("Here are the available cores:\n\n");
     core_welcome();
-    delay(100000000);
+    sys_timer_sleep_ms(100);
     core_execute(1, core_welcome);
-    delay(100000000);
+    sys_timer_sleep_ms(100);
     core_execute(2, core_welcome);
-    delay(100000000);
+    sys_timer_sleep_ms(100);
     core_execute(3, core_welcome);
 
-    while(1) {}
+    core_execute(3, test69);
 
-    //shell();
+    core_execute(3, shell);
+
+
+    while(1) {
+        wfe();
+    }
 }

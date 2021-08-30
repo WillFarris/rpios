@@ -74,7 +74,7 @@ void shell()
     char * args[10];
     char *cur = commandbuffer;
 
-    print_console("\n> ");
+    print_console("\nShell running on core %d\n\n> ", get_core());
     while(1)
     {
         char c = uart_getc();
