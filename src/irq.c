@@ -81,5 +81,11 @@ void handle_irq()
         // Local timer has run out
         handle_local_timer_irq();
     }
+
+    u32 core = get_core();
+    u32 source = QA7->core_irq_source[core] & ((1 << 12)-1);
+    if(source ) {
+        fbprintf("IRQ from core %d: 0x%X\n", core, source);
+    }
     
 }
