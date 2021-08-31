@@ -42,9 +42,9 @@ void kernel_main()
     sys_timer_init();
     fbprintf("Enabled system timer\n");
 
-    //reg32 local_timer_core = 3;
-    //local_timer_init(local_timer_core, 0); // route to core local_timer_core IRQ (fiq = false)
-    //fbprintf("Enabled local timer routing to core %d\n", local_timer_core);
+    reg32 local_timer_core = 3;
+    local_timer_init(local_timer_core, 0); // route to core local_timer_core IRQ (fiq = false)
+    fbprintf("Enabled local timer routing to core %d\n", local_timer_core);
     
     u8 red = fb.bg >> 16 & 0xFF;
     u8 green = fb.bg >> 8 & 0xFF;
@@ -59,12 +59,9 @@ void kernel_main()
     core_execute(2, core_welcome);
     sys_timer_sleep_ms(100);
     core_execute(3, core_welcome);
-
-    core_execute(3, test69);
-
-    core_execute(3, shell);
-
-
+    sys_timer_sleep_ms(100);
+    
+    
     while(1) {
         wfe();
     }
