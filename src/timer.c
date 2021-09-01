@@ -8,10 +8,15 @@
 u32 cur_val_1 = 0;
 u32 cur_val_3 = 0;
 
-void core_timer_init(u32 core)
+u64 cntfrq[4];
+
+void core_timer_init()
 {
-    QA7->core_timer_interrupt_control[core] = 0b1111;
-    
+    u32 core = get_core();
+    cntfrq[core] = get_cntfrq_el0();
+    write_cntv_tval(cntfrq[core]);
+    enable_cntv();
+    QA7->core_timer_interrupt_control[core] = 0x8;
 }
 
 // Timer 1 will go off every 1 second

@@ -44,8 +44,12 @@ void enable_interrupt_controller()
     REGS_IRQ->irq0_enable_1 = TIMER_MATCH1 | TIMER_MATCH3;// | AUX_IRQ;
 }
 
+extern u64 cntfrq[4];
+
+u8 fblock = 0;
 void handle_irq()
 {
+    irq_disable();
     u32 irq = REGS_IRQ->irq0_pending_1;
     while(irq)
     {
@@ -84,8 +88,16 @@ void handle_irq()
 
     u32 core = get_core();
     u32 source = QA7->core_irq_source[core] & ((1 << 12)-1);
-    if(source ) {
-        fbprintf("IRQ from core %d: 0x%X\n", core, source);
+    if(source & 0x8) {
+        while(fblock) {}
+        fblock = 1;
+        fb.cursor_y = char_height * core + 300;
+        fb.cursor_x = 0;
+        u64 timer = read_cntvct();
+        fbprintf("Core %d: 0x%X\r", core, timer);
+        write_cntv_tval(CLOCKHZ);
+        fblock = 0;
+        
     }
-    
+    irq_enable();
 }
