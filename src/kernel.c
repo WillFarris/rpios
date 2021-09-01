@@ -31,7 +31,8 @@ void kernel_main()
     init_printf(0, putc);
 
     fbinit(DISPLAY_WIDTH, DISPLAY_HEIGHT);
-    u32 bg = 0x800000;
+    //u32 bg = 0x800000;
+    u32 bg = 0x0;
     fbclear(bg);
 
     fbprintf("Booting Raspberry Pi 3\n\n");
@@ -39,18 +40,20 @@ void kernel_main()
     enable_interrupt_controller();
     fbprintf("Interrupt controller initialized\n");
     
-    sys_timer_init();
+    /*sys_timer_init();
     fbprintf("Enabled system timer\n");
 
     reg32 local_timer_core = 3;
     local_timer_init(local_timer_core, 0); // route to core local_timer_core IRQ (fiq = false)
-    fbprintf("Enabled local timer routing to core %d\n", local_timer_core);
+    fbprintf("Enabled local timer routing to core %d\n", local_timer_core);*/
     
     u8 red = fb.bg >> 16 & 0xFF;
     u8 green = fb.bg >> 8 & 0xFF;
     u8 blue = fb.bg & 0xFF;
     fbprintf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: r=%d, g=%d, b=%d\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, red, green, blue, fb.ptr);
     
+    fbclear(bg);
+
     fbprintf("Here are the available cores:\n\n");
     core_welcome();
     sys_timer_sleep_ms(100);
@@ -60,8 +63,15 @@ void kernel_main()
     sys_timer_sleep_ms(100);
     core_execute(3, core_welcome);
     sys_timer_sleep_ms(100);
+
+    QA7->control_register = 0b00 << 8;
+
+    core_timer_init();
+    for(int i=1;i<4;++i) {
+        core_execute(i, core_timer_init);
+    }
     
-    
+
     while(1) {
         wfe();
     }

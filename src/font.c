@@ -49,7 +49,7 @@ void fbputc(char c)
                 if(val != 0)
                     *cur_pixel = val;
                 else
-                    *cur_pixel = 0x800000;
+                    *cur_pixel = bg;
                 cur_pixel++;
             }
             data += fontmap_width - char_width;
@@ -62,5 +62,10 @@ void fbputc(char c)
             fb.cursor_x = 0;
             fb.cursor_y += char_height;
         }
+    }
+
+    if(fb.cursor_y+char_height > fb.height) {
+        fbclear(fb.bg);
+        fb.cursor_y = 0;
     }
 }

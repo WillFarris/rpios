@@ -2,7 +2,7 @@
 
 #include "types.h"
 
-#define DISPLAY_WIDTH 800 
+#define DISPLAY_WIDTH 1024 
 #define DISPLAY_HEIGHT 600
 
 struct FrameBuffer
