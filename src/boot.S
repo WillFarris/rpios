@@ -72,6 +72,8 @@ set_stack:
 el1_entry:
     bl irq_init_vectors
     bl irq_enable
+    mov x0, #0x1
+    bl write_pmcr_el0
 
     cmp x5, #MASTER_CORE
     bne slave_core_sleep

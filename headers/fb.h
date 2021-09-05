@@ -2,8 +2,8 @@
 
 #include "types.h"
 
-#define DISPLAY_WIDTH 1024 
-#define DISPLAY_HEIGHT 600
+#define DISPLAY_WIDTH 800 
+#define DISPLAY_HEIGHT 450
 
 struct FrameBuffer
 {
@@ -11,8 +11,8 @@ struct FrameBuffer
     u32 height;
     u32 pitch;
     u32 isrgb;
-    u32 cursor_x;
-    u32 cursor_y;
+    u32 cursor_x[4];
+    u32 cursor_y[4];
     u32 bg;
     u8 * ptr;
 };

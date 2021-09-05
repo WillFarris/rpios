@@ -60,6 +60,16 @@ sys_timer_get_ticks:
     orr x0, x0, x1
     ret
 
+.globl write_pmcr_el0
+write_pmcr_el0:
+    msr pmcr_el0, x0
+    ret
+
+.globl read_pmccntr_el0
+read_pmccntr_el0:
+    mrs x0, pmccntr_el0
+    ret
+
 .globl wfe
 wfe:
     wfe

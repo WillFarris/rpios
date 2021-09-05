@@ -11,3 +11,5 @@ typedef int32_t i32;
 
 typedef volatile u32 reg32;
 typedef volatile u64 reg64;
+
+#define NULL 0

@@ -3,23 +3,28 @@ get_cntfrq_el0:
     mrs x0, cntfrq_el0
     ret
 
-.globl write_cntv_tval
-write_cntv_tval:
-    msr cntv_tval_el0, x0
+.globl write_cntp_tval
+write_cntp_tval:
+    msr cntp_tval_el0, x0
     ret
 
-.globl read_cntv_tval
-read_cntv_tval:
-    mrs x0, cntv_tval_el0
+.globl read_cntp_tval
+read_cntp_tval:
+    mrs x0, cntp_tval_el0
     ret
 
-.globl enable_cntv
-enable_cntv:
+.globl write_cntp_tval_el0
+write_cntp_tval_el0:
+    msr cntp_tval_el0, x0
+    ret
+
+.globl read_cntpct_el0
+read_cntpct_el0:
+    mrs x0, cntpct_el0
+    ret
+
+.globl enable_cntp
+enable_cntp:
     mov x0, #1
-    msr cntv_ctl_el0, x0
-    ret
-
-.globl read_cntvct
-read_cntvct:
-    mrs x0, cntvct_el0
+    msr cntp_ctl_el0, x0
     ret
