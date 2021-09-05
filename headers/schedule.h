@@ -1,4 +1,5 @@
 #pragma once
+
 #include "types.h"
 
 struct context {
@@ -17,10 +18,17 @@ struct context {
     u64 pc;
 };
 
-struct task {
+struct process {
     struct context ctx;
     long state;
     long counter;
     long priority;
     long preempt;
 };
+
+struct pnode {
+    struct process proc;
+    struct task_node *next;
+};
+
+void init_scheduler();

@@ -5,10 +5,9 @@
 #include "regstruct.h"
 #include "mini_uart.h"
 #include "timer.h"
-
 #include "font.h"
 
-extern void shell();
+#include "tasks.h"
 
 const char entry_error_messages[16][32] =
 {
@@ -41,15 +40,14 @@ void show_invalid_entry_message(u32 type, u64 esr, u64 address)
 void enable_interrupt_controller()
 {
     // Timer1 + Timer 3 + Mini UART
-    REGS_IRQ->irq0_enable_1 = TIMER_MATCH1 | TIMER_MATCH3;// | AUX_IRQ;
+    REGS_IRQ->irq0_enable_1 = TIMER_MATCH1 | TIMER_MATCH3 | AUX_IRQ;
 }
 
-extern u64 cntfrq[4];
+u64 elapsed_ticks[4];
 
-u8 fblock = 0;
 void handle_irq()
 {
-    irq_disable();
+    //irq_disable();
     u32 irq = REGS_IRQ->irq0_pending_1;
     while(irq)
     {
@@ -59,7 +57,10 @@ void handle_irq()
             irq &= ~AUX_IRQ;
             while((REGS_AUX->mu_iir & 4) == 4)
             {
+                u8 c = uart_getc();
                 fbputc(uart_getc());
+                if(c == '\r') fbputc('\n');
+                
                 //shell();
             }
         }
@@ -87,17 +88,12 @@ void handle_irq()
     }
 
     u32 core = get_core();
-    u32 source = QA7->core_irq_source[core] & ((1 << 12)-1);
-    if(source & 0x8) {
-        while(fblock) {}
-        fblock = 1;
-        fb.cursor_y = char_height * core + 300;
-        fb.cursor_x = 0;
-        u64 timer = read_cntvct();
-        fbprintf("Core %d: 0x%X\r", core, timer);
-        write_cntv_tval(CLOCKHZ);
-        fblock = 0;
-        
+    u32 source = QA7->core_irq_source[core] & 2;// & ((1 << 12)-1);
+    if(source) {
+        print_uptime();
+
+        u64 ticks = 10000;
+        write_cntp_tval_el0(ticks);
     }
-    irq_enable();
+    //irq_enable();
 }

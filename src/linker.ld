@@ -54,9 +54,13 @@ SECTIONS
         __stack_end_core3__ = .;    
     }
 
-	.heap : {
+	.kernel_heap : {
 		.  = ALIGN(4);
-		__heap_start = .;
+		__kernel_heap_start = .;
+        . = . + 16777216; /* 16MB kernel heap*/
+        __kernel_heap_end = .;
+
+        __kernel_heap_size = __kernel_heap_end - __kernel_heap_start;
 	}
 
 }

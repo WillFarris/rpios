@@ -1,6 +1,7 @@
 #include "types.h"
 #include "mbox.h"
 #include "fb.h"
+#include "utils.h"
 #include "printf.h"
 
 i32 fbinit(int pw, int ph) {
@@ -63,6 +64,7 @@ i32 fbinit(int pw, int ph) {
 }
 
 void fbclear(u32 color) {
+    u8 core = get_core();
     // Invert R and B channels if in RGB mode
     if(fb.isrgb)
     {
@@ -72,8 +74,8 @@ void fbclear(u32 color) {
         color = (r >> 16) | g | (b << 16);
     }
     fb.bg = color;
-    fb.cursor_x = 0;
-    fb.cursor_y = 0;
+    fb.cursor_x[core] = 0;
+    fb.cursor_y[core] = 0;
     
     u32 * cur_pixel = (u32 *) fb.ptr;
 
@@ -111,7 +113,8 @@ void fbsetres(u64 w, u64 h) {
 
     mbox[16] = MBOX_TAG_LAST;
 
-    if(mbox_call(MBoxChannelPROP)) {
+    mbox_call(MBoxChannelPROP);
+    if(1) {
         fb.width  = mbox[5];          //get actual physical width
         fb.height = mbox[6];         //get actual physical height
         fb.pitch = mbox[10];

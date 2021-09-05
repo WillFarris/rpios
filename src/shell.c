@@ -5,6 +5,7 @@
 #include "string.h"
 #include "fb.h"
 #include "printf.h"
+#include "mini_uart.h"
 
 #define print_console fbprintf
 #define print_console_c fbputc
@@ -27,7 +28,7 @@ void exec(char **args)
         print_console("\n> ");
     } else if(strcmp(args[0], "clear") == 0)
     {
-        fbclear(0x800000);
+        fbclear(fb.bg);
         print_console("> ");
     } else if(strcmp(args[0], "mod") == 0)
     {
@@ -38,7 +39,10 @@ void exec(char **args)
     {
         u64 w = strtol(args[1]);
         u64 h = strtol(args[2]);
-        fbsetres(w, h);
+        fbinit(w, h);
+    } else if(strcmp(args[0], "help") == 0)
+    {
+        print_console("Available commands:\n    gcd <a> <b>\n    phi <n>\n    primefactors <n>\n    clear\n    mod <n> <m>\n    setres <w> <h>\n    help\n\n> ");
     } else
     {
         print_console("Unknown command: %s\n> ", args[0]);
@@ -73,6 +77,7 @@ void shell()
     char commandbuffer[DISPLAY_WIDTH];
     char * args[10];
     char *cur = commandbuffer;
+    u8 core = get_core();
 
     print_console("\nShell running on core %d\n\n> ", get_core());
     while(1)
@@ -81,17 +86,14 @@ void shell()
         switch(c)
         {
             case 0x7F:
-                fb.cursor_x -= char_width;
+                fb.cursor_x[core] -= char_width;
                 *(--cur) = 0;
                 --cur;
                 print_console_c(' ');
-                fb.cursor_x -= char_width;
+                fb.cursor_x[core] -= char_width;
                 break;
             case '\r':
-                print_console_c('\n');
-                print_console_c('\r');
-                print_console_c('>');
-                print_console_c(' ');
+                print_console("\n\r> ");
                 *cur = 0;
                 cur = commandbuffer;
                 parse_command(commandbuffer, args);
