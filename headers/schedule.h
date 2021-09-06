@@ -27,9 +27,10 @@ enum pstate {
 struct process {
     struct context ctx;
     enum pstate state;
-    long counter;
-    long priority;
-    long preempt;
+    u64 counter;
+    u64 priority;
+    u64 preempt;
+    u64 pid;
 };
 
 struct pnode {
@@ -38,10 +39,11 @@ struct pnode {
 };
 
 struct _ptable {
+    u64 num_procs;
     struct pnode *head;
     struct pnode *tail;
     struct pnode *current;
-} ptable;
+};
 
 void disable_preempt();
 void enable_preempt();
