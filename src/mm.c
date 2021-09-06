@@ -6,7 +6,7 @@ static u8 page_map[NUM_PAGES] = {0,};
 
 extern u64 __kernel_heap_start;
 
-u64 * get_free_page()
+u64 get_free_page()
 {
     for(int i=0;i<NUM_PAGES;++i)
     {
