@@ -8,5 +8,5 @@
 #define NUM_PAGES 16777216/PAGE_SIZE
 //#define NUM_PAGES __kernel_heap_size / PAGE_SIZE
 
-u64 * get_free_page();
+u64 get_free_page();
 void free_page(u64 *);

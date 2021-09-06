@@ -18,9 +18,15 @@ struct context {
     u64 pc;
 };
 
+enum pstate {
+    TASK_SLEEP,
+    TASK_RUNNING,
+    TASK_ZOMBIE,
+};
+
 struct process {
     struct context ctx;
-    long state;
+    enum pstate state;
     long counter;
     long priority;
     long preempt;
@@ -31,4 +37,15 @@ struct pnode {
     struct task_node *next;
 };
 
+struct _ptable {
+    struct pnode *head;
+    struct pnode *tail;
+    struct pnode *current;
+} ptable;
+
+void disable_preempt();
+void enable_preempt();
+
 void init_scheduler();
+void schedule();
+void new_process(u64, u64);
