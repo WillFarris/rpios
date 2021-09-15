@@ -2,15 +2,15 @@
 #include "string.h"
 #include "printf.h"
 
-u64 strlen(const char* str)
+u64 strlen(char* s)
 {
     int len = 0;
-    char *cur = str;
+    char *cur = s;
     while(*cur++ != 0) ++len;
     return len;
 }
 
-u64 strcmp(const char *strg1, const char *strg2)
+u64 strcmp(char *strg1, char *strg2)
 {
     while( ( *strg1 != '\0' && *strg2 != '\0' ) && *strg1 == *strg2 )
     {
@@ -33,7 +33,7 @@ u64 pow(int i, int pow)
     return i;
 }
 
-u64 strtol(const char* str)
+u64 strtol(char* str)
 {
     if(!str) return -1;
     int ret = 0;

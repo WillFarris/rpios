@@ -31,18 +31,13 @@ struct process {
     u64 priority;
     u64 preempt;
     u64 pid;
-};
-
-struct pnode {
-    struct process proc;
-    struct task_node *next;
+    struct process *next;
 };
 
 struct _ptable {
     u64 num_procs;
-    struct pnode *head;
-    struct pnode *tail;
-    struct pnode *current;
+    struct process *head;
+    struct process *tail;
 };
 
 void disable_preempt();
@@ -51,3 +46,4 @@ void enable_preempt();
 void init_scheduler();
 void schedule();
 void new_process(u64, u64);
+void ret_from_fork();
