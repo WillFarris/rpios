@@ -4,7 +4,7 @@
 extern u8 kernel_heap[];
 static u8 page_map[NUM_PAGES] = {0,};
 
-extern u64 __kernel_heap_start;
+extern u8 __kernel_heap_start;
 
 u64 get_free_page()
 {
@@ -12,13 +12,14 @@ u64 get_free_page()
     {
         if(page_map[i] == 0)
         {
-            return (u64 *) (__kernel_heap_start + (i * PAGE_SIZE));
+            page_map[i] = 1;
+            return (&__kernel_heap_start + (i * PAGE_SIZE));
         }
     }
     return 0;
 }
 
-void free_page(u64 * page)
+void free_page(void * page)
 {
-    page_map[((u64) page - __kernel_heap_start) / PAGE_SIZE] = 0;
+    page_map[((u64) (page - (void*)&__kernel_heap_start)) / PAGE_SIZE] = 0;
 }

@@ -10,6 +10,7 @@
 #include "math.h"
 #include "schedule.h"
 #include "shell.h"
+#include "tasks.h"
 
 #include "reg.h"
 
@@ -21,8 +22,11 @@ void core_welcome() {
     fbprintf("Core %d online with sp=0x%X\n", core, sp);
 }
 
-void test69() {
-    printf("test\n");
+void test(u32 id) {
+    while(1) {
+        printf("test proc %d\n", id);
+        sys_timer_sleep_ms(100 * id);
+    }
 }
 
 void kernel_main() 
@@ -37,11 +41,11 @@ void kernel_main()
 
     fbprintf("Booting Raspberry Pi 3\n\n");
     
-    //enable_interrupt_controller();
+    enable_interrupt_controller();
     //fbprintf("Interrupt controller initialized\n");
     
-    /*sys_timer_init();
-    fbprintf("Enabled system timer\n");*/
+    //sys_timer_init();
+    //fbprintf("Enabled system timer\n");
 
     /*reg32 local_timer_core = 3;
     local_timer_init(local_timer_core, 0); // route to core local_timer_core IRQ (fiq = false)
@@ -51,7 +55,6 @@ void kernel_main()
     u8 green = fb.bg >> 8 & 0xFF;
     u8 blue = fb.bg & 0xFF;
     fbprintf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: r=%d, g=%d, b=%d\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, red, green, blue, fb.ptr);
-    
 
     /*fbprintf("Here are the available cores:\n\n");
     core_welcome();
@@ -67,9 +70,18 @@ void kernel_main()
 
     //fb.cursor_y[2] = fb.cursor_y[0];
     //fb.cursor_x[2] = fb.cursor_x[0];
-    //core_execute(2, shell);    
+    //core_execute(2, shell);
+
+    init_scheduler();
+    core_timer_init();
+
+    new_process((u64) test, 1);
+    new_process((u64) test, 2);
+
+    //shell();
 
     while(1) {
-        wfe();
+        //wfe();
+        schedule();
     }
 }

@@ -88,12 +88,16 @@ void handle_irq()
     }
 
     u32 core = get_core();
-    u32 source = QA7->core_irq_source[core] & 2;// & ((1 << 12)-1);
-    if(source) {
-        print_uptime();
+    u32 core_irq_source = QA7->core_irq_source[core];
+    if(core_irq_source & 2) { // & ((1 << 12)-1)
+        u64 irqs_per_sec = 1;
+        u64 ticks = get_cntfrq_el0()/irqs_per_sec;
 
-        u64 ticks = 10000;
-        write_cntp_tval_el0(ticks);
+        write_cntp_tval(ticks);
+        enable_cntp();
+        
+        uart_puts("Core timer interrupt\n");
+        _schedule();
     }
     //irq_enable();
 }

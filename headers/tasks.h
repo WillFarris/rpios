@@ -4,4 +4,4 @@
 #include "font.h"
 #include "shell.h"
 
-void print_uptime();
+//void print_uptime();
