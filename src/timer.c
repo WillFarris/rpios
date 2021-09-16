@@ -58,7 +58,7 @@ void handle_sys_timer3_irq()
 
 void handle_local_timer_irq()
 {
-    fbprintf("\nLocal timer interrupt on core %d\n", get_core());
+    printf("\nLocal timer interrupt on core %d\n", get_core());
     LOCAL_TIMER->set_clear_reload = (0x3 << 30);
 }
 

@@ -56,11 +56,11 @@ void _schedule() {
     else if(ptable.head == ptable.tail) return;
     else {
         prev = ptable.head;
-        next = ptable.tail;
+        next = ptable.head->next;
         ptable.head = ptable.head->next;
-        next->next = NULL;
-        ptable.tail->next = next;
-        ptable.tail = next;
+        prev->next = NULL;
+        ptable.tail->next = prev;
+        ptable.tail = prev;
     }
     if(next == prev) return;
     cpu_switch_to(prev, next);
