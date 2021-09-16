@@ -45,6 +45,7 @@ void enable_interrupt_controller()
 
 u64 elapsed_ticks[4];
 
+u32 irq_count = 0;
 void handle_irq()
 {
     //irq_disable();
@@ -90,14 +91,11 @@ void handle_irq()
     u32 core = get_core();
     u32 core_irq_source = QA7->core_irq_source[core];
     if(core_irq_source & 2) { // & ((1 << 12)-1)
-        u64 irqs_per_sec = 1;
-        u64 ticks = get_cntfrq_el0()/irqs_per_sec;
-
-        write_cntp_tval(ticks);
-        enable_cntp();
-        
-        uart_puts("Core timer interrupt\n");
+        u64 ticks = get_cntfrq_el0();
+        write_cntp_tval(ticks / 1000);
+        irq_enable();
         _schedule();
+        
     }
     //irq_enable();
 }

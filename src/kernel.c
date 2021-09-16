@@ -14,6 +14,8 @@
 
 #include "reg.h"
 
+void print_uptime();
+
 struct FrameBuffer fb;
 
 void core_welcome() {
@@ -24,8 +26,8 @@ void core_welcome() {
 
 void test(u32 id) {
     while(1) {
-        printf("test proc %d\n", id);
-        sys_timer_sleep_ms(100 * id);
+        printf("test proc: %d\n", id);
+        sys_timer_sleep_ms(2000);
     }
 }
 
@@ -41,15 +43,15 @@ void kernel_main()
 
     fbprintf("Booting Raspberry Pi 3\n\n");
     
-    enable_interrupt_controller();
+    //enable_interrupt_controller();
     //fbprintf("Interrupt controller initialized\n");
     
     //sys_timer_init();
     //fbprintf("Enabled system timer\n");
 
-    /*reg32 local_timer_core = 3;
+    /*reg32 local_timer_core = 0;
     local_timer_init(local_timer_core, 0); // route to core local_timer_core IRQ (fiq = false)
-    fbprintf("Enabled local timer routing to core %d\n", local_timer_core);*/
+    printf("Enabled local timer routing to core %d\n", local_timer_core);*/
     
     u8 red = fb.bg >> 16 & 0xFF;
     u8 green = fb.bg >> 8 & 0xFF;
@@ -75,13 +77,13 @@ void kernel_main()
     init_scheduler();
     core_timer_init();
 
-    new_process((u64) test, 1);
-    new_process((u64) test, 2);
+    //new_process((u64) test, 420);
+    //new_process((u64) shell, 0);
+    new_process((u64) print_uptime, 0);
 
     //shell();
 
     while(1) {
-        //wfe();
-        schedule();
+        shell();
     }
 }
