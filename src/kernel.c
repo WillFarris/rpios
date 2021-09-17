@@ -89,9 +89,12 @@ void kernel_main()
 
     //new_process((u64) test, 420);
     //new_process((u64) shell, 0);
-    new_process((u64) print_uptime, 0);
-    new_process((u64) draw_rects, 0);
-    new_process((u64) shell, 0);
+    if(!new_process((u64) print_uptime, 0))
+        printf("Could not create uptime ticker\n");
+    if(!new_process((u64) draw_rects, 0))
+        printf("Could not create draw_rects task");
+    if(!new_process((u64) shell, 0))
+        printf("Could not create shell");
 
     //shell();
 

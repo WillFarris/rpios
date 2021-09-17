@@ -45,5 +45,5 @@ void enable_preempt();
 
 void init_scheduler();
 void schedule();
-void new_process(u64, u64);
+i64 new_process(u64, u64);
 void ret_from_fork();
