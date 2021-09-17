@@ -10,6 +10,7 @@
 #include "math.h"
 #include "schedule.h"
 #include "shell.h"
+#include "gfx.h"
 #include "tasks.h"
 
 #include "reg.h"
@@ -31,6 +32,17 @@ void test(u32 id) {
     }
 }
 
+void draw_rects() {
+    int x = 0;
+    int y = 0;
+    int color = 0x000000;
+    while(1) {
+        drawRect(x++, y++, 100, 100, color++);
+        color += 8;
+        sys_timer_sleep_ms(750);
+    }
+}
+
 void kernel_main() 
 {
     uart_init_alt();    
@@ -38,7 +50,7 @@ void kernel_main()
 
     fbinit(DISPLAY_WIDTH, DISPLAY_HEIGHT);
     //u32 bg = 0x800000;
-    u32 bg = 0x0;
+    u32 bg = 0xF00000;
     fbclear(bg);
 
     fbprintf("Booting Raspberry Pi 3\n\n");
@@ -80,6 +92,7 @@ void kernel_main()
     //new_process((u64) test, 420);
     //new_process((u64) shell, 0);
     new_process((u64) print_uptime, 0);
+    new_process((u64) draw_rects, 0);
 
     //shell();
 
