@@ -22,13 +22,13 @@ void enable_preempt() {
         ptable.head->preempt -=1;
 }
 
-void new_process(u64 entry, u64 arg) {
+i64 new_process(u64 entry, u64 arg) {
 
     if(!ptable.head || !ptable.tail) return;
 
     disable_preempt();
     struct process *p = (struct process *) get_free_page();
-    if(!p) return;
+    if(!p) return -1;
 
     p->priority = 1;
     p->state = TASK_RUNNING;
@@ -40,18 +40,21 @@ void new_process(u64 entry, u64 arg) {
     p->ctx.pc = (u64) ret_from_fork;
     p->ctx.sp = (u64) p + 4096;
     
-    p->pid = 1 + ptable.num_procs++;
+    u64 pid = 1 + ptable.num_procs++;
+    p->pid = pid;
 
     p->next = ptable.head->next;
     if(!p->next) ptable.tail = p;
     ptable.head->next = p;
     enable_preempt();
+
+    return pid;
 }
 
 void _schedule() {
     disable_preempt();
 
-    printf("We are in the scheduler\n");
+    uart_putc('.');
 
     struct process *prev;
     struct process *next;
@@ -66,6 +69,9 @@ void _schedule() {
         ptable.tail = prev;
     }
     if(next == prev) return;
+    uart_puts("Switching to PID ");
+    uart_putc('0' + next->pid);
+    uart_putc('\n');
     cpu_switch_to(prev, next);
     enable_preempt();
 }
