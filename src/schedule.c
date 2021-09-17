@@ -1,5 +1,6 @@
 #include "schedule.h"
 #include "mm.h"
+#include "printf.h"
 
 struct _ptable ptable;
 
@@ -49,6 +50,8 @@ void new_process(u64 entry, u64 arg) {
 
 void _schedule() {
     disable_preempt();
+
+    printf("We are in the scheduler\n");
 
     struct process *prev;
     struct process *next;

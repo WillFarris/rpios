@@ -33,12 +33,10 @@ void test(u32 id) {
 }
 
 void draw_rects() {
-    int x = 0;
-    int y = 0;
-    int color = 0x000000;
+    u32 color = 0xF00000;
     while(1) {
-        drawRect(x++, y++, 100, 100, color++);
-        color += 8;
+        drawRect(fb.width-100, 0, 100, 100, color--);
+        color = color - 0xF;
         sys_timer_sleep_ms(750);
     }
 }
@@ -93,10 +91,13 @@ void kernel_main()
     //new_process((u64) shell, 0);
     new_process((u64) print_uptime, 0);
     new_process((u64) draw_rects, 0);
+    new_process((u64) shell, 0);
 
     //shell();
 
+    printf("Starting scheduler\n");
     while(1) {
-        shell();
+        //shell();
+        schedule();
     }
 }
