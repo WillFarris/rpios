@@ -21,6 +21,6 @@ I do all my development on Manjaro so I don't really have a need for building fo
 The [ARM GNU Toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm) is what I use along with `make` to compile the OS. I run the OS in QEMU for debugging, so you'll need a version of QEMU that supports aarch64.
 
 ## Compiling
-See the `Makefile` for what specific commands do what. You'll want to create a file called `gccpath.mk` and add the `ARMGNU` variable to tell Make where to find the compiler.
+See the `Makefile` for what specific `make` commands are doing. You'll want to create a file called `gccpath.mk` and add the `ARMGNU` variable to tell Make where to find the compiler.
 
 The command `make qemu` will compile the OS and run it in a VM. `make qemus` pauses QEMU on startup and waits for a GDB connection for debugging. `make gdb` connects to QEMU and allows stepping through code.
