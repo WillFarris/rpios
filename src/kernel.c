@@ -132,8 +132,8 @@ void kernel_main()
         new_process((u64) test, i, "test_proc");
     }*/
 
-    core_execute(1, loop_schedule);
-    core_execute(2, loop_schedule);
-    core_execute(3, loop_schedule);
+    //core_execute(1, loop_schedule);
+    //core_execute(2, loop_schedule);
+    //core_execute(3, loop_schedule);
     loop_schedule();
 }
