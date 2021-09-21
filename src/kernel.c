@@ -127,10 +127,10 @@ void kernel_main()
     new_process((u64) draw_rects, 0, "raspberry_pi_logo");
     new_process((u64) shell, 0, "shell");
 
-    for(int i=0;i<10;++i)
+    /*for(int i=0;i<10;++i)
     {
         new_process((u64) test, i, "test_proc");
-    }
+    }*/
 
     core_execute(1, loop_schedule);
     core_execute(2, loop_schedule);
