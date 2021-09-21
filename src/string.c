@@ -23,6 +23,16 @@ u64 strcmp(char *strg1, char *strg2)
         return *strg1 - *strg2;
 }
 
+u64 strcpy(char *dst, char *src)
+{
+    u64 len = 0;
+    while(*src) {
+        *dst++ = *src++;
+        ++len;
+    }
+    return len;
+}
+
 u64 pow(int i, int pow)
 {
     if(pow==0) return 1;

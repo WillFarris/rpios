@@ -6,9 +6,12 @@
 #include "fb.h"
 #include "printf.h"
 #include "mini_uart.h"
+#include "schedule.h"
 
 #define print_console fbprintf
 #define print_console_c fbputc
+
+extern u64 scheduler_ticks_per_second;
 
 void exec(char **args)
 {
@@ -40,9 +43,15 @@ void exec(char **args)
         u64 w = strtol(args[1]);
         u64 h = strtol(args[2]);
         fbinit(w, h);
+    } else if(strcmp(args[0], "ptable") == 0)
+    {
+        print_ptable();
+    } else if(strcmp(args[0], "set_sched_tps") == 0)
+    {
+        scheduler_ticks_per_second = strtol(args[1]);
     } else if(strcmp(args[0], "help") == 0)
     {
-        print_console("Available commands:\n    gcd <a> <b>\n    phi <n>\n    primefactors <n>\n    clear\n    mod <n> <m>\n    setres <w> <h>\n    help\n\n> ");
+        print_console("Available commands:\n    gcd <a> <b>\n    phi <n>\n    primefactors <n>\n    clear\n    mod <n> <m>\n    setres <w> <h>\n    ptable\n    set_sched_tps <scheduler ticks per second>\n    help\n\n> ");
     } else
     {
         print_console("Unknown command: %s\n> ", args[0]);

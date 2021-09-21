@@ -7,13 +7,22 @@
 
 u32 cur_val_1 = 0;
 u32 cur_val_3 = 0;
+u64 scheduler_ticks_per_second = 1000;
 
 void core_timer_init()
 {
-    u32 core = get_core();
-    write_cntp_tval(get_cntfrq_el0());
+    write_cntp_tval(1000);
     enable_cntp();
+    u32 core = get_core();
     QA7->core_timer_interrupt_control[core] = 0xF;
+}
+
+void core_timer_handle_irq()
+{
+    u64 ticks = get_cntfrq_el0();
+    write_cntp_tval(ticks / scheduler_ticks_per_second);
+    irq_enable();
+    _schedule();
 }
 
 // Timer 1 will go off every 1 second

@@ -7,8 +7,6 @@
 #include "timer.h"
 #include "font.h"
 
-#include "tasks.h"
-
 const char entry_error_messages[16][32] =
 {
     "SYNC_INVALID_EL1t",
@@ -91,11 +89,7 @@ void handle_irq()
     u32 core = get_core();
     u32 core_irq_source = QA7->core_irq_source[core];
     if(core_irq_source & 2) { // & ((1 << 12)-1)
-        u64 ticks = get_cntfrq_el0();
-        write_cntp_tval(ticks / 1000);
-        irq_enable();
-        _schedule();
-        
+        core_timer_handle_irq();
     }
     //irq_enable();
 }
