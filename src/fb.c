@@ -77,13 +77,13 @@ void fbclear(u32 color) {
     fb.cursor_x[core] = 0;
     fb.cursor_y[core] = 0;
     
-    u32 * cur_pixel = (u32 *) fb.ptr;
-
+    u64 * cur_pixel = (u64 *) fb.ptr;
+    u64 long_color = fb.bg | ((u64) fb.bg << 32);
     for(int y=0; y<fb.height;++y)
     {
         for(int x=0;x < fb.width;++x)
         {
-            *cur_pixel = color;
+            *cur_pixel = long_color;
             cur_pixel++;
         }
         cur_pixel += fb.pitch - fb.width*4;

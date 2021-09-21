@@ -1,4 +1,5 @@
 #include "mm.h"
+#include "printf.h"
 #include "types.h"
 
 extern u8 kernel_heap[];
@@ -13,7 +14,12 @@ u64 get_free_page()
         if(page_map[i] == 0)
         {
             page_map[i] = 1;
-            return (&__kernel_heap_start + (i * PAGE_SIZE));
+
+            u64 page_addr = &__kernel_heap_start + (i * PAGE_SIZE);
+            for(u64 i=0;i<PAGE_SIZE;++i) {
+                *((u64*) page_addr+i) = 0;
+            }
+            return page_addr;
         }
     }
     return 0;

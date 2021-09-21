@@ -1,6 +1,8 @@
 #include "schedule.h"
 #include "mm.h"
 #include "printf.h"
+#include "string.h"
+#include "spinlock.h"
 
 struct _ptable ptable;
 
@@ -8,8 +10,15 @@ struct _ptable ptable;
 void init_scheduler() {
     struct process *p = get_free_page();
     p->state = TASK_RUNNING;
-    ptable.head = p;
-    ptable.tail = p;
+    p->next = NULL;
+    strcpy(p->name, "init");
+    ptable.head = NULL;
+    ptable.tail = NULL;
+    ptable.lock = 0;
+    for(int i=0;i<4;++i) {
+        ptable.current[i] = NULL;
+    }
+    ptable.current[get_core()] = p;
 }
 
 void disable_preempt() {
@@ -22,13 +31,21 @@ void enable_preempt() {
         ptable.head->preempt -=1;
 }
 
-i64 new_process(u64 entry, u64 arg) {
+void exit() {
+    irq_disable();
+    u8 core = get_core();
+    ptable.current[core]->state = TASK_ZOMBIE;
+    _schedule();
+    irq_enable();
+}
 
-    if(!ptable.head || !ptable.tail) return;
+i64 new_process(u64 entry, u64 arg, char*name) {
 
     disable_preempt();
     struct process *p = (struct process *) get_free_page();
-    if(!p) return -1;
+    if(!p) return 0;
+
+    strcpy(p->name, name);
 
     p->priority = 1;
     p->state = TASK_RUNNING;
@@ -43,46 +60,81 @@ i64 new_process(u64 entry, u64 arg) {
     u64 pid = 1 + ptable.num_procs++;
     p->pid = pid;
 
-    p->next = ptable.head->next;
-    if(!p->next) ptable.tail = p;
-    ptable.head->next = p;
+    p->next = NULL;
+    if(!ptable.head) {
+        ptable.head = p;
+        ptable.tail = p;
+    } else {
+        ptable.tail->next = p;
+        ptable.tail = p;
+    }
     enable_preempt();
 
     return pid;
 }
 
 void _schedule() {
+    irq_disable();
+    u8 core = get_core();
+
+    while(ptable.lock != 0) {}
+    ptable.lock = core + 1;
+    //while(__LDREXW(ptable_lock) != 0) {}
+
     disable_preempt();
+    struct process *prev = ptable.current[core];
+    struct process *next = ptable.head;
 
-    uart_putc('.');
-
-    struct process *prev;
-    struct process *next;
-    if(!ptable.head) return;
-    else if(ptable.head == ptable.tail) return;
-    else {
-        prev = ptable.head;
-        next = ptable.head->next;
-        ptable.head = ptable.head->next;
-        prev->next = NULL;
-        ptable.tail->next = prev;
-        ptable.tail = prev;
+    if(!next) {
+        ptable.lock = 0;
+        return;
     }
-    if(next == prev) return;
-    uart_puts("Switching to PID ");
-    uart_putc('0' + next->pid);
-    uart_putc('\n');
-    cpu_switch_to(prev, next);
+    
+    if(prev->state == TASK_RUNNING) {
+        ptable.tail->next = prev;
+        prev->next = NULL;
+        ptable.tail = prev;
+    } else if(prev->state == TASK_ZOMBIE) {
+        free_page(prev);
+        prev = NULL;
+    }
+    ptable.head = next->next;
+    if(!ptable.head) ptable.tail = NULL;
+    
+    next->next = NULL;
+    ptable.current[core] = next;
+
+    //__STREXW(core+1, ptable_lock);
+    ptable.lock = 0;
+
+    if(prev)
+        cpu_switch_to(prev, next);
+    else
+        cpu_ctx_restore(prev, next);
     enable_preempt();
 }
 
 
 void schedule() {
-    if(ptable.head) ptable.head->counter = 0;
+    u32 core = get_core();
+    if(ptable.current[core]) ptable.current[core]->counter = 0;
     _schedule();
 }
 
 
 void schedule_tail() {
+    irq_enable();
 	enable_preempt();
+}
+
+void print_ptable() {
+    irq_disable();
+    fbputc('\n');
+    fbputc('\r');
+    struct process *head = ptable.head;
+    while(head) {
+        fbprintf("    [%d] %s\n", head->pid, head->name);
+        head = head->next;
+    }
+    irq_enable();
 }

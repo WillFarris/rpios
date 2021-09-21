@@ -11,11 +11,8 @@
 #include "schedule.h"
 #include "shell.h"
 #include "gfx.h"
-#include "tasks.h"
-
 #include "reg.h"
-
-void print_uptime();
+#include "pi_logo.h"
 
 struct FrameBuffer fb;
 
@@ -32,13 +29,49 @@ void test(u32 id) {
     }
 }
 
-void draw_rects() {
-    u32 color = 0xF00000;
-    while(1) {
-        drawRect(fb.width-100, 0, 100, 100, color--);
-        color = color - 0xF;
-        sys_timer_sleep_ms(750);
+void print_sys_info()
+{
+    while(1)
+    {
+        irq_disable();
+        u32 core = get_core();
+
+        u64 sys_timer = SYS_TIMER_REGS->timer_clo;      // Read low 32 bits
+        sys_timer |= (SYS_TIMER_REGS->timer_chi << 32); // Read high 32 bits and combine
+        sys_timer /= 1000;                              // Divide by 1000 to get value in ms
+
+        u64 sec = sys_timer / 1000;
+        u64 min = sec / 60;
+        u64 hr  = min / 60;
+        
+        u64 x = fb.cursor_x[core];
+        u64 y = fb.cursor_y[core];
+        fb.cursor_x[core] = 0;
+        fb.cursor_y[core] = fb.height - (char_height * (core+1) * 2);
+        fbprintf("uptime: %d:%d:%d:%d", hr, min%60, sec%60, sys_timer%1000);
+        fb.cursor_x[core] = x;
+        fb.cursor_y[core] = y;
+        irq_enable();
     }
+}
+
+void draw_rects() {
+    u8 pos = 0;
+    int i=0;//pi_logo.height;
+    while(1) {// for(int i=0;i<100;++i) {
+        //u32 color = wheel(pos);
+        //drawRect(fb.width-100, 0, 100, 100, color);
+        //pos += 1;
+        u32 margin = 2;
+        draw_pi_logo(fb.width-pi_logo.width - margin, margin + i++);
+        sys_timer_sleep_ms(50);
+        if(i > fb.height) i = 0;
+    }
+    exit();
+}
+
+void loop_schedule() {
+    while(1) schedule();
 }
 
 void kernel_main() 
@@ -48,10 +81,10 @@ void kernel_main()
 
     fbinit(DISPLAY_WIDTH, DISPLAY_HEIGHT);
     //u32 bg = 0x800000;
-    u32 bg = 0xF00000;
+    u32 bg = 0x0;
     fbclear(bg);
 
-    fbprintf("Booting Raspberry Pi 3\n\n");
+    fbprintf("\nBooting Raspberry Pi 3\n\n");
     
     //enable_interrupt_controller();
     //fbprintf("Interrupt controller initialized\n");
@@ -66,7 +99,7 @@ void kernel_main()
     u8 red = fb.bg >> 16 & 0xFF;
     u8 green = fb.bg >> 8 & 0xFF;
     u8 blue = fb.bg & 0xFF;
-    fbprintf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: r=%d, g=%d, b=%d\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, red, green, blue, fb.ptr);
+    printf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: r=%d, g=%d, b=%d\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, red, green, blue, fb.ptr);
 
     /*fbprintf("Here are the available cores:\n\n");
     core_welcome();
@@ -89,18 +122,18 @@ void kernel_main()
 
     //new_process((u64) test, 420);
     //new_process((u64) shell, 0);
-    if(!new_process((u64) print_uptime, 0))
-        printf("Could not create uptime ticker\n");
-    if(!new_process((u64) draw_rects, 0))
-        printf("Could not create draw_rects task");
-    if(!new_process((u64) shell, 0))
-        printf("Could not create shell");
+    
+    new_process((u64) print_sys_info, 0, "sys_info");    
+    new_process((u64) draw_rects, 0, "raspberry_pi_logo");
+    new_process((u64) shell, 0, "shell");
 
-    //shell();
-
-    printf("Starting scheduler\n");
-    while(1) {
-        //shell();
-        schedule();
+    for(int i=0;i<10;++i)
+    {
+        new_process((u64) test, i, "test_proc");
     }
+
+    core_execute(1, loop_schedule);
+    core_execute(2, loop_schedule);
+    core_execute(3, loop_schedule);
+    loop_schedule();
 }
