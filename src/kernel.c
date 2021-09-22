@@ -82,7 +82,6 @@ void kernel_main()
     fbinit(DISPLAY_WIDTH, DISPLAY_HEIGHT);
     //u32 bg = 0x800000;
     u32 bg = 0x0;
-    fbclear(bg);
 
     fbprintf("\nBooting Raspberry Pi 3\n\n");
     
@@ -99,7 +98,7 @@ void kernel_main()
     u8 red = fb.bg >> 16 & 0xFF;
     u8 green = fb.bg >> 8 & 0xFF;
     u8 blue = fb.bg & 0xFF;
-    printf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: r=%d, g=%d, b=%d\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, red, green, blue, fb.ptr);
+    fbprintf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: r=%d, g=%d, b=%d\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, red, green, blue, fb.ptr);
 
     /*fbprintf("Here are the available cores:\n\n");
     core_welcome();
