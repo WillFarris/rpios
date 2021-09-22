@@ -24,7 +24,7 @@ void core_welcome() {
 
 void test(u32 id) {
     while(1) {
-        printf("test proc: %d\n", id);
+        fbprintf("test proc: %d\n", id);
         sys_timer_sleep_ms(2000);
     }
 }
@@ -37,7 +37,7 @@ void print_sys_info()
         u32 core = get_core();
 
         u64 sys_timer = SYS_TIMER_REGS->timer_clo;      // Read low 32 bits
-        sys_timer |= (SYS_TIMER_REGS->timer_chi << 32); // Read high 32 bits and combine
+        sys_timer |= ((u64)SYS_TIMER_REGS->timer_chi << 32); // Read high 32 bits and combine
         sys_timer /= 1000;                              // Divide by 1000 to get value in ms
 
         u64 sec = sys_timer / 1000;
@@ -53,17 +53,17 @@ void print_sys_info()
         fb.cursor_y[core] = y;
         irq_enable();
     }
+    exit();
 }
 
-void draw_rects() {
-    u8 pos = 0;
+void draw_rects(u32 offset) {
     int i=0;//pi_logo.height;
     while(1) {// for(int i=0;i<100;++i) {
         //u32 color = wheel(pos);
         //drawRect(fb.width-100, 0, 100, 100, color);
         //pos += 1;
-        u32 margin = 2;
-        draw_pi_logo(fb.width-pi_logo.width - margin, margin + i++);
+        u32 margin = 5;
+        draw_pi_logo(fb.width-pi_logo.width - margin - offset, margin + i++);
         sys_timer_sleep_ms(50);
         if(i > fb.height) i = 0;
     }
@@ -122,14 +122,9 @@ void kernel_main()
     //new_process((u64) test, 420);
     //new_process((u64) shell, 0);
     
-    new_process((u64) print_sys_info, 0, "sys_info");    
+    new_process((u64) print_sys_info, 0, "sys_info");
     new_process((u64) draw_rects, 0, "raspberry_pi_logo");
     new_process((u64) shell, 0, "shell");
-
-    /*for(int i=0;i<10;++i)
-    {
-        new_process((u64) test, i, "test_proc");
-    }*/
 
     //core_execute(1, loop_schedule);
     //core_execute(2, loop_schedule);

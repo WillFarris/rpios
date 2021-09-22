@@ -57,7 +57,8 @@ i32 fbinit(int pw, int ph) {
         fb.height = mbox[6];         //get actual physical height
         fb.pitch  = mbox[33];         //get number of bytes per line
         fb.isrgb  = mbox[24];         //get the actual channel order
-        fb.ptr    =(void*)((unsigned long)mbox[28]);
+        fb.lock   = 0;
+        fb.ptr    = (void*)((unsigned long)mbox[28]);
         return 0;
     }
     return -1;

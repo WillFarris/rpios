@@ -4,9 +4,11 @@
 
 void fbputs(const char*s)
 {
+    //acquire(&fb.lock);
     if(!s) return;
     while(*s)
         fbputc(*s++);
+    //release(&fb.lock);
 }
 
 void pf_fbputc(void *p, char c)
