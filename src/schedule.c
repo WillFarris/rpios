@@ -3,6 +3,7 @@
 #include "printf.h"
 #include "string.h"
 #include "spinlock.h"
+#include "font.h"
 
 struct _ptable ptable;
 
@@ -76,17 +77,14 @@ i64 new_process(u64 entry, u64 arg, char*name) {
 void _schedule() {
     irq_disable();
     u8 core = get_core();
+    
+    acquire(&(ptable.lock));
 
-    while(ptable.lock != 0) {}
-    ptable.lock = core + 1;
-    //while(__LDREXW(ptable_lock) != 0) {}
-
-    disable_preempt();
     struct process *prev = ptable.current[core];
     struct process *next = ptable.head;
 
     if(!next) {
-        ptable.lock = 0;
+        release(&ptable.lock);
         return;
     }
     
@@ -104,20 +102,18 @@ void _schedule() {
     next->next = NULL;
     ptable.current[core] = next;
 
-    //__STREXW(core+1, ptable_lock);
-    ptable.lock = 0;
+    release(&ptable.lock);
 
     if(prev)
         cpu_switch_to(prev, next);
     else
         cpu_ctx_restore(prev, next);
-    enable_preempt();
 }
 
 
 void schedule() {
-    u32 core = get_core();
-    if(ptable.current[core]) ptable.current[core]->counter = 0;
+    //u32 core = get_core();
+    //if(ptable.current[core]) ptable.current[core]->counter = 0;
     _schedule();
 }
 
@@ -131,10 +127,18 @@ void print_ptable() {
     irq_disable();
     fbputc('\n');
     fbputc('\r');
+    acquire(&ptable.lock);
     struct process *head = ptable.head;
+    struct process *core = NULL;
+    for(int i=0;i<4;++i) {
+        core = ptable.current[i];
+        fbprintf("   [core %d] 0x%X %s", i, core ? core->pid : 0, core ? ptable.current[i]->name : "<null>");
+    }
+    fbputc('\n');fbputc('\r');fbputc('\n');
     while(head) {
-        fbprintf("    [%d] %s\n", head->pid, head->name);
+        fbprintf("   [pid %d] %s\n", head->pid, head->name);
         head = head->next;
     }
+    release(&ptable.lock);
     irq_enable();
 }

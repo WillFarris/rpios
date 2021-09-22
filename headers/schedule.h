@@ -41,7 +41,7 @@ struct _ptable {
     struct process *head;
     struct process *tail;
     struct process * current[4];
-    volatile u64 lock;
+    u8 lock;
 };
 
 void disable_preempt();
@@ -52,3 +52,4 @@ void schedule();
 i64 new_process(u64, u64, char*);
 void ret_from_fork();
 void print_ptable();
+void exit();

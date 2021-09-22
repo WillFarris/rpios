@@ -2,7 +2,9 @@
 #include "types.h"
 #include "regstruct.h"
 #include "utils.h"
+#include "schedule.h"
 #include "printf.h"
+#include "irq.h"
 #include "font.h"
 
 u32 cur_val_1 = 0;
@@ -22,7 +24,7 @@ void core_timer_handle_irq()
     u64 ticks = get_cntfrq_el0();
     write_cntp_tval(ticks / scheduler_ticks_per_second);
     irq_enable();
-    _schedule();
+    schedule();
 }
 
 // Timer 1 will go off every 1 second

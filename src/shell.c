@@ -7,6 +7,7 @@
 #include "printf.h"
 #include "mini_uart.h"
 #include "schedule.h"
+#include "utils.h"
 
 #define print_console fbprintf
 #define print_console_c fbputc
@@ -31,7 +32,7 @@ void exec(char **args)
         print_console("\n> ");
     } else if(strcmp(args[0], "clear") == 0)
     {
-        new_process(fbclear, fb.bg, "clear screen");
+        new_process((u64) fbclear, fb.bg, "clear screen");
     } else if(strcmp(args[0], "mod") == 0)
     {
         u64 a = strtol(args[1]);

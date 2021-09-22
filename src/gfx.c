@@ -4,7 +4,7 @@
 #include "pi_logo.h"
 
 void draw_pi_logo(u32 x, u32 y) {
-
+  //acquire(&fb.lock);
   u32 *in = pi_logo.pixel_data;
   u32 *out = (u32 *) fb.ptr + x + (fb.width * y);
   for(int row=0;row<pi_logo.height; ++row) {
@@ -23,6 +23,7 @@ void draw_pi_logo(u32 x, u32 y) {
     }
     out += fb.width - pi_logo.width;
   }
+  //release(&fb.lock);
 }
 
 void drawRect(u32 x, u32 y, u32 w, u32 h, u32 color) {

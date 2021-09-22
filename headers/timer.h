@@ -15,6 +15,7 @@ void handle_sys_timer3_irq();
 void handle_local_timer_irq();
 
 void core_timer_init();
+void core_timer_handle_irq();
 
 u64 get_cntfrq_el0();
 void write_cntp_tval(u64);
