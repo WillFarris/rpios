@@ -31,8 +31,7 @@ void exec(char **args)
         print_console("\n> ");
     } else if(strcmp(args[0], "clear") == 0)
     {
-        fbclear(fb.bg);
-        print_console("> ");
+        new_process(fbclear, fb.bg, "clear screen");
     } else if(strcmp(args[0], "mod") == 0)
     {
         u64 a = strtol(args[1]);
@@ -88,7 +87,8 @@ void shell()
     char *cur = commandbuffer;
     u8 core = get_core();
 
-    print_console("\nShell running on core %d\n\n> ", get_core());
+    print_console_c('>');
+    print_console_c(' ');
     while(1)
     {
         char c = uart_getc();

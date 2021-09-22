@@ -88,6 +88,8 @@ void fbclear(u32 color) {
         }
         cur_pixel += fb.pitch - fb.width*4;
     }
+    fbprintf("> ");
+    exit();
 }
 
 void fbsetres(u64 w, u64 h) {
