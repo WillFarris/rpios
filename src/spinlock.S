@@ -1,16 +1,11 @@
 .globl acquire
 acquire:
-spin_lock:
-    mov    w2, 1
-    .p2align 2
-acqloop:
-    ldaxrb    w1, [x0]
-    dmb sy
-    stxrb    w3, w2, [x0]
-    dmb sy
-    cbnz    w3, acqloop
-    uxtb    w1, w1
-    cbnz    w1, acqloop
+    ldxrb  w8, [x0]
+    cbnz  w8, acquire
+    add   w8, w8, #1  // =1
+    stlxrb  w9, w8, [x0]
+    cbnz  w9, acquire
+    dmb ish
     ret
 
 .globl release
@@ -19,6 +14,6 @@ release:
     mov w1, #0xFF
 releaseloop:
     //stxrb w1, w2, [x0]
-    str w2, [x0]
+    strb w2, [x0]
     //cbnz w1, releaseloop
     ret

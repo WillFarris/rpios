@@ -71,6 +71,7 @@ void draw_rects(u32 offset) {
 }
 
 void loop_schedule() {
+    //printf("Starting scheduler on core %d\n", get_core());
     while(1) schedule();
 }
 
@@ -80,10 +81,9 @@ void kernel_main()
     init_printf(0, putc);
 
     fbinit(DISPLAY_WIDTH, DISPLAY_HEIGHT);
-    //u32 bg = 0x800000;
-    u32 bg = 0x0;
 
-    fbprintf("\nBooting Raspberry Pi 3\n\n");
+    printf("\n\nBooting Raspberry Pi 3\n\nBuilt "__TIME__" on "__DATE__"\n\n");
+    fbprintf("\n\nBooting Raspberry Pi 3\n\nBuilt "__TIME__" on "__DATE__"\n\n");
     
     //enable_interrupt_controller();
     //fbprintf("Interrupt controller initialized\n");
@@ -100,21 +100,9 @@ void kernel_main()
     u8 blue = fb.bg & 0xFF;
     fbprintf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: r=%d, g=%d, b=%d\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, red, green, blue, fb.ptr);
 
-    /*fbprintf("Here are the available cores:\n\n");
-    core_welcome();
-    sys_timer_sleep_ms(100);
-    for(int i=1;i<4;++i) {
-        core_execute(i, core_welcome);
-        sys_timer_sleep_ms(100);
-    }*/
+    mmu_init();
 
     QA7->control_register = 0b00 << 8;
-
-    //core_execute(1, core_timer_init);
-
-    //fb.cursor_y[2] = fb.cursor_y[0];
-    //fb.cursor_x[2] = fb.cursor_x[0];
-    //core_execute(2, shell);
 
     init_scheduler();
     core_timer_init();
@@ -129,5 +117,6 @@ void kernel_main()
     //core_execute(1, loop_schedule);
     //core_execute(2, loop_schedule);
     //core_execute(3, loop_schedule);
+    
     loop_schedule();
 }

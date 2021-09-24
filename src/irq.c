@@ -32,7 +32,7 @@ const char entry_error_messages[16][32] =
 
 void show_invalid_entry_message(u32 type, u64 esr, u64 address)
 {
-    printf("ERROR CAUGHT: %s - %d, ESR: 0x%X, Address: 0x%X\n", entry_error_messages[type], esr, address);
+    printf("ERROR CAUGHT: %s, core %d, ESR: 0x%X, Address: 0x%X\n", entry_error_messages[type], get_core(), esr, address);
 }
 
 void enable_interrupt_controller()

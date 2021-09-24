@@ -42,7 +42,7 @@ struct _ptable {
     struct process *tail;
     struct process * current[4];
     u8 lock;
-};
+} __attribute__ ((aligned (8)));
 
 void disable_preempt();
 void enable_preempt();
