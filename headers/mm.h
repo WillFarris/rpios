@@ -10,3 +10,4 @@
 
 u64 get_free_page();
 void free_page(void *);
+void mmu_init();

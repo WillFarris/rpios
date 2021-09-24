@@ -2,10 +2,15 @@
 #include "printf.h"
 #include "types.h"
 
+u64 paging[PAGE_SIZE * 2];
 extern u8 kernel_heap[];
 static u8 page_map[NUM_PAGES] = {0,};
-
 extern u8 __kernel_heap_start;
+
+void mmu_init() {
+
+    
+}
 
 u64 get_free_page()
 {

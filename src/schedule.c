@@ -78,12 +78,18 @@ void _schedule() {
     irq_disable();
     u8 core = get_core();
     
-    acquire(&(ptable.lock));
+    //uart_puts("acquiring lock\n");
+    //__sync_fetch_and_add(&ptable.lock, 1);
+    acquire(&ptable.lock);
+    //while(__atomic_test_and_set(&ptable.lock, 1));
+    //uart_puts("lock acquired\n");
+    
 
     struct process *prev = ptable.current[core];
     struct process *next = ptable.head;
 
     if(!next) {
+        //uart_puts("releasing lock\n");
         release(&ptable.lock);
         return;
     }
@@ -102,6 +108,7 @@ void _schedule() {
     next->next = NULL;
     ptable.current[core] = next;
 
+    //uart_puts("releasing lock\n");
     release(&ptable.lock);
 
     if(prev)

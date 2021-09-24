@@ -2,7 +2,9 @@ SECTIONS
 {
 	.text : { *(.text.boot) *(.text) }
 	.rodata : { *(.rodata) }
-	.data : { *(.data) }
+	.data : { 
+        *(.data)
+    }
 	. = ALIGN(8);
 	bss_begin = .;
 	.bss : {
