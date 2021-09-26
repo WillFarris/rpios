@@ -10,7 +10,7 @@ So far, here's what's working:
 * The system timer (which doesn't really do anything)
 * ARM generic timers, used to generate interrupts for running the scheduler
 * A simple round-robin scheduler
-* Multicore support - including all cores running the scheduler (WIP)
+* Multicore support - ~including all cores running the scheduler~ (WIP, will continue after MMU is working as pages must be outer sharable for atomic load/store instructions)
 * Framebuffer + some non-accelerated graphics capabilities
 * Shell with some built-in commands
 

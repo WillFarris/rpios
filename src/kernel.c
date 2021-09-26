@@ -100,7 +100,9 @@ void kernel_main()
     u8 blue = fb.bg & 0xFF;
     fbprintf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: r=%d, g=%d, b=%d\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, red, green, blue, fb.ptr);
 
-    mmu_init();
+    //printf("Turning on MMU\n");
+    //mmu_init();
+    //printf("MMU enabled\n");
 
     QA7->control_register = 0b00 << 8;
 

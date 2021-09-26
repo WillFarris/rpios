@@ -65,4 +65,7 @@ SECTIONS
         __kernel_heap_size = __kernel_heap_end - __kernel_heap_start;
 	}
 
+    . = ALIGN(65536);
+    __kernel_img_end = .;
+
 }
