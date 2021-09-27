@@ -96,11 +96,11 @@ void shell()
         switch(c)
         {
             case 0x7F:
-                fb.cursor_x[core] -= char_width;
+                fb.cursor_x -= char_width;
                 *(--cur) = 0;
                 --cur;
                 print_console_c(' ');
-                fb.cursor_x[core] -= char_width;
+                fb.cursor_x -= char_width;
                 break;
             case '\r':
                 print_console("\n\r> ");

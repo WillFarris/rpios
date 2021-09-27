@@ -44,13 +44,13 @@ void print_sys_info()
         u64 min = sec / 60;
         u64 hr  = min / 60;
         
-        u64 x = fb.cursor_x[core];
-        u64 y = fb.cursor_y[core];
-        fb.cursor_x[core] = 0;
-        fb.cursor_y[core] = fb.height - (char_height * (core+1) * 2);
+        u64 x = fb.cursor_x;
+        u64 y = fb.cursor_y;
+        fb.cursor_x = 0;
+        fb.cursor_y = fb.height - (char_height * (core+1) * 2);
         fbprintf("uptime: %d:%d:%d:%d", hr, min%60, sec%60, sys_timer%1000);
-        fb.cursor_x[core] = x;
-        fb.cursor_y[core] = y;
+        fb.cursor_x = x;
+        fb.cursor_y = y;
         irq_enable();
     }
     exit();
@@ -115,8 +115,8 @@ void kernel_main()
     new_process((u64) shell, 0, "shell");
 
     core_execute(1, loop_schedule);
-    //core_execute(2, loop_schedule);
-    //core_execute(3, loop_schedule);
+    core_execute(2, loop_schedule);
+    core_execute(3, loop_schedule);
     
     loop_schedule();
 }
