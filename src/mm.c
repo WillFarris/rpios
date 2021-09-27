@@ -1,6 +1,15 @@
 #include "mm.h"
+#include "gpio.h"
 #include "printf.h"
 #include "types.h"
+
+// SHIFT = log2(size)
+// NUM_LVL2_TABLES = KernelAddressSpaceSize >> Granule512MiBShift
+//                 = (0x4000_FFFF + 1) >> log2()
+// Identity map address space up to and including Pi 3 peripherals
+//#define NUM_TABLES ((0x4000FFFF + 1) >> 30)
+#define NUM_TABLES 3//((0xFFFFFFFF + 1) >> 30)
+const u64 num_tables = NUM_TABLES;
 
 struct {
     u64 lower_level3[NUM_TABLES][8192];
@@ -9,61 +18,86 @@ struct {
     u64 higher_level2[NUM_TABLES];
 } translation_table __attribute__((aligned(65536)));
 
-
 extern u8 kernel_heap[];
 static u8 page_map[NUM_PAGES] = {0,};
 extern u8 __kernel_heap_start;
 extern u8 __kernel_heap_end;
 extern u8 __kernel_img_end;
 
-u64 set_mair_el1(u8 value, u64 attr_num) {
-    set_mair_el1_asm(((u64)value) << (8 * attr_num));
+void print_pa_range_support(u8 ips) {
+    ips = ips & 0xF;
+    printf("Physical address range supported: %d bits\n",
+        ips == 0 ? 32 : ips == 1 ? 36 : ips == 2 ? 40 : ips == 3 ? 42 : ips == 4 ? 44 : ips == 5 ? 48 : ips == 6 ? 52 : 0xFF
+    );
 }
 
 void mmu_init() {
+    printf("Turning on MMU\n");
     u8 ips = (u8)(get_id_aa64mmfr0_el1() & 0xF);
+    u64 t0sz = 64 - 30;
+    print_pa_range_support(ips);
     u64 tcr_el1 =
-        (0b00LL << 37) | // TBI=0, no tagging
-        (ips    << 32) | // IPS=autodetected
-        (0b10LL << 30) | // TG1=4k
-        (0b11LL << 28) | // SH1=3 inner
-        (0b01LL << 26) | // ORGN1=1 write back
-        (0b01LL << 24) | // IRGN1=1 write back
-        (0b0LL  << 23) | // EPD1 enable higher half
-        (25LL   << 16) | // T1SZ=25, 3 levels (512G)
-        (0b01LL << 14) | // TG0=64k
-        (0b10LL << 12) | // SH0=2 outer
-        (0b01LL << 10) | // ORGN0=1 write back
-        (0b01LL << 8)  | // IRGN0=1 write back
-        (0b0LL  << 7)  | // EPD0 enable lower half
-        (25LL   << 0);   // T0SZ=25, 3 levels (512G)
+        (0b0LL      << 37) | // TBI0,  Top byte used in address calculation
+        (0b010LL    << 32) | // IPS,   40 bit virtual address
+        (0b01LL     << 14) | // TG0,   64KiB
+        (0b10LL     << 12) | // SH0,   Outer-sharable
+        (0b01LL     << 10) | // ORGN0, WriteBack_ReadAlloc_WriteAlloc_Cacheable
+        (0b01LL     <<  8) | // IRGN0, WriteBack_ReadAlloc_WriteAlloc_Cacheable
+        (0b0LL      <<  7) | // EPD0,  Enable TTBR0 walks
+        (0b1LL      << 22) | // A1,    TTBR0
+        (32LL       <<  0) | // T0SZ, 
+        (0b1LL      << 23);  // EDP1,  Disable TTBR1 walks
 
-    printf("Populating translation tables\n");
-    for(int i=0;i<NUM_TABLES;++i) {
-        //0xFFFF_FFFF = END_INCLUSIVE, shift = 32
-        //0x4000_FFFF = END_INCLUSIVE, shift = 30
+    // Set MAIR attributes
+    // 1: 0xFF - regular DRAM
+    // 0: 0x04 - device memory
+    set_mair_el1(
+        (0b00001100 << 16) | // Attr 2: Device memory, GRE
+        (0b11111111 <<  8) | // Attr 1: Normal memory, Outer Write-Back Non-transient, RW
+        (0b00000000 <<  0)   // Attr 0: Device memory, nGnRnE
+    );
 
+    printf("Populating %d level 2 translation tables\n", NUM_TABLES);
+    for(int i=0;i<NUM_TABLES;i++) {
         u64 lvl2_addr = (u64)&(translation_table.lower_level3[i]) >> 16;
         translation_table.lower_level2[i] = (
             (lvl2_addr << 16) | // next level table address
-            (0b1       <<  1) | // table 
-            (0b1       <<  0)   // valid 
-        ); // fill in the table descriptor
+            (0b11      <<  0)   // table, valid
+        );
         
         for(int j=0;j<8192;++j) {
-            u64 virt_addr = (i << 30) + (j << 16);
+            u64 virt_addr = (i << 29) + (j << 16);
+            u64 mair_attr = 1;
 
+            // PBASE (start of MMIO) is 0x3F000000
+            // MMIO used by this program ends at 0x4000FFFF
+            // Set device memory to use MAIR_EL1 attribute 0
+            if(virt_addr >= PBASE && virt_addr <= 0x4000FFFF) {
+                //printf("[lvl2 table %d] Mapping device memory at 0x%X vs 0x%X\n", i, virt_addr, PBASE);
+                mair_attr = 2;
+            }
+            
+            
             translation_table.lower_level3[i][j] = (
-                virt_addr |
-                0 // set some flags here
-            ); // fill each entry in the table
+                virt_addr         | // Virtual address
+                (0b1UL     << 10) | // Accessed
+                (0b10      <<  8) | // Outer-sharable
+                (0b0       <<  7) | // Read-Write
+                (0b0       <<  6) | // Kernel only
+                (mair_attr << 2)  | // MAIR attribute index
+                (0b11      <<  0)   // valid page
+            );
+            if(j == 8191) {
+                printf("Last entry in L3 table for L2 table %d at index 0x%X: 0x%X\n", i, j, translation_table.lower_level3[i][j]);
+            }
         }
     }
 
     u64 ttbr1_el1 = (u64) &translation_table.higher_level2;
     u64 ttbr0_el1 = (u64) &translation_table.lower_level2;
-    printf("Setting tcr and enabling MMU...\n0x%X\n", &__kernel_img_end);
+    printf("Setting tcr and enabling MMU...\n");
     mmu_init_asm(ttbr0_el1, ttbr1_el1, tcr_el1);
+    uart_puts("MMU enabled\n");
 }
 
 u64 get_free_page()

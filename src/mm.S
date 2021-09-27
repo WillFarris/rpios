@@ -3,8 +3,8 @@ get_id_aa64mmfr0_el1:
     mrs x0, id_aa64mmfr0_el1
     ret
 
-.globl set_mair_el1_asm
-set_mair_el1_asm:
+.globl set_mair_el1
+set_mair_el1:
     msr mair_el1, x0
     ret
 

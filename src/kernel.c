@@ -100,23 +100,21 @@ void kernel_main()
     u8 blue = fb.bg & 0xFF;
     fbprintf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: r=%d, g=%d, b=%d\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, red, green, blue, fb.ptr);
 
-    //printf("Turning on MMU\n");
-    //mmu_init();
-    //printf("MMU enabled\n");
+    mmu_init();
 
     QA7->control_register = 0b00 << 8;
 
     init_scheduler();
     core_timer_init();
 
-    //new_process((u64) test, 420);
-    //new_process((u64) shell, 0);
+    //new_process((u64) test, 420, "test420");
+    //new_process((u64) test, 69, "test69");
     
-    new_process((u64) print_sys_info, 0, "sys_info");
+    //new_process((u64) print_sys_info, 0, "sys_info");
     new_process((u64) draw_rects, 0, "raspberry_pi_logo");
     new_process((u64) shell, 0, "shell");
 
-    //core_execute(1, loop_schedule);
+    core_execute(1, loop_schedule);
     //core_execute(2, loop_schedule);
     //core_execute(3, loop_schedule);
     
