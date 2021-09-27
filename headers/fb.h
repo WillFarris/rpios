@@ -11,8 +11,8 @@ struct FrameBuffer
     u32 height;
     u32 pitch;
     u32 isrgb;
-    u32 cursor_x[4];
-    u32 cursor_y[4];
+    u32 cursor_x;
+    u32 cursor_y;
     u32 bg;
     u8 lock;
     u8 * ptr;
