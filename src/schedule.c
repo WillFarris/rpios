@@ -137,11 +137,12 @@ void print_ptable() {
     acquire(&ptable.lock);
     struct process *head = ptable.head;
     struct process *core = NULL;
+    fbprintf("  cores:\n");
     for(int i=0;i<4;++i) {
         core = ptable.current[i];
-        fbprintf("   [core %d] 0x%X %s", i, core ? core->pid : 0, core ? ptable.current[i]->name : "<null>");
+        fbprintf("   [core %d] 0x%X %s\n", i, core ? core->pid : 0, core ? ptable.current[i]->name : "<null>");
     }
-    fbputc('\n');fbputc('\r');fbputc('\n');
+    fbprintf("\n  not running\n");
     while(head) {
         fbprintf("   [pid %d] %s\n", head->pid, head->name);
         head = head->next;

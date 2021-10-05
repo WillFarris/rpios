@@ -114,9 +114,9 @@ void kernel_main()
     new_process((u64) draw_rects, 0, "raspberry_pi_logo");
     new_process((u64) shell, 0, "shell");
 
-    core_execute(1, loop_schedule);
-    core_execute(2, loop_schedule);
-    core_execute(3, loop_schedule);
+    //core_execute(1, loop_schedule);
+    //core_execute(2, loop_schedule);
+    //core_execute(3, loop_schedule);
     
     loop_schedule();
 }
