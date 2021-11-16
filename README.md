@@ -10,8 +10,9 @@ So far, here's what's working:
 * The system timer (which doesn't really do anything)
 * ARM generic timers, used to generate interrupts for running the scheduler
 * A simple round-robin scheduler
-* Multicore support - ~including all cores running the scheduler~ (WIP, will continue after MMU is working as pages must be outer sharable for atomic load/store instructions)
-* Framebuffer + some non-accelerated graphics capabilities
+* The entire address space is identity mapped in 64KB pages
+  * This is required for aarch64's load/store exclusive instructions as memory must be marked as outer-sharable
+* Framebuffer + bitmap text
 * Shell with some built-in commands
 
 ## Build and Run
