@@ -25,6 +25,16 @@ void exec(char **args)
     {
         u64 n = strtol(args[1]);
         print_console("%d\n> ", phi(n));
+    } else if(strcmp(args[0], "lcm") == 0)
+    {
+        u64 n = strtol(args[1]);
+        u64 m = strtol(args[2]);
+        print_console("%d\n> ", lcm(n, m));
+    } else if(strcmp(args[0], "ord") == 0)
+    {
+        u64 a = strtol(args[1]);
+        u64 m = strtol(args[2]);
+        print_console("%d\n> ", ord(a, m));
     } else if (strcmp(args[0], "primefactors") == 0)
     {
         u64 n = strtol(args[1]);
@@ -51,7 +61,7 @@ void exec(char **args)
         scheduler_ticks_per_second = strtol(args[1]);
     } else if(strcmp(args[0], "help") == 0)
     {
-        print_console("Available commands:\n    gcd <a> <b>\n    phi <n>\n    primefactors <n>\n    clear\n    mod <n> <m>\n    setres <w> <h>\n    ptable\n    set_sched_tps <scheduler ticks per second>\n    help\n\n> ");
+        print_console("Available commands:\n    gcd <a> <b>\n    phi <n>\n    lcm <a> <b>\n    ord <a> <m>\n    primefactors <n>\n    clear\n    mod <n> <m>\n    setres <w> <h>\n    ptable\n    set_sched_tps <scheduler ticks per second>\n    help\n\n> ");
     } else
     {
         print_console("Unknown command: %s\n> ", args[0]);

@@ -1,14 +1,27 @@
 #include "math.h"
 
-// Function to return gcd of a and b 
+// Greatest common divisor of a and b 
 u64 gcd(u64 a, u64 b) 
 { 
     if (a == 0) 
         return b; 
     return gcd(b % a, a); 
 } 
-  
-// A simple method to evaluate Euler Totient Function 
+
+// Least common multiple of a & b
+u64 lcm(u64 a, u64 b)
+{
+    return (a * b)/gcd(a, b);
+}
+
+// Order of a mod m
+u64 ord(u64 a, u64 m)
+{
+    if(a == 0) return 1; //ord(e) == 1 for any group
+    return m / gcd(a, m);
+}
+
+// Euler Totient Function 
 u64 phi(u64 n) 
 { 
     u64 result = 1; 
