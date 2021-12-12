@@ -44,13 +44,17 @@ void print_sys_info()
         u64 min = sec / 60;
         u64 hr  = min / 60;
         
+        acquire(&fb.lock);
         u64 x = fb.cursor_x;
         u64 y = fb.cursor_y;
         fb.cursor_x = 0;
         fb.cursor_y = fb.height - (char_height * (core+1) * 2);
+        release(&fb.lock);
         fbprintf("uptime: %d:%d:%d:%d", hr, min%60, sec%60, sys_timer%1000);
+        acquire(&fb.lock);
         fb.cursor_x = x;
         fb.cursor_y = y;
+        release(&fb.lock);
         irq_enable();
     }
     exit();
@@ -98,7 +102,7 @@ void kernel_main()
     u8 red = fb.bg >> 16 & 0xFF;
     u8 green = fb.bg >> 8 & 0xFF;
     u8 blue = fb.bg & 0xFF;
-    fbprintf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: r=%d, g=%d, b=%d\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, red, green, blue, fb.ptr);
+    printf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: r=%d, g=%d, b=%d\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, red, green, blue, fb.ptr);
 
     mmu_init();
 
@@ -107,15 +111,15 @@ void kernel_main()
     init_scheduler();
     core_timer_init();
 
-    //new_process((u64) test, 420, "test420");
-    //new_process((u64) test, 69, "test69");
+    new_process((u64) test, 420, "test420");
+    new_process((u64) test, 69, "test69");
     
     //new_process((u64) print_sys_info, 0, "sys_info");
     new_process((u64) draw_rects, 0, "raspberry_pi_logo");
     new_process((u64) shell, 0, "shell");
 
-    //core_execute(1, loop_schedule);
-    //core_execute(2, loop_schedule);
+    core_execute(1, loop_schedule);
+    core_execute(2, loop_schedule);
     //core_execute(3, loop_schedule);
     
     loop_schedule();

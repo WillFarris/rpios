@@ -69,7 +69,7 @@ void mmu_init() {
             u64 virt_addr = (i << 29) + (j << 16);
             u64 mair_attr = 1;
 
-            // PBASE (start of MMIO) is 0x3F000000
+            // PBASE (start of MMIO) is 0x3F000000 on Pi 3
             // MMIO used by this program ends at 0x4000FFFF
             // Set device memory to use MAIR_EL1 attribute 0
             if(virt_addr >= PBASE && virt_addr <= 0x4000FFFF) {

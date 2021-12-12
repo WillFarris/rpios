@@ -33,11 +33,10 @@ void enable_preempt() {
 }
 
 void exit() {
-    irq_disable();
     u8 core = get_core();
+    acquire(&ptable.lock);
     ptable.current[core]->state = TASK_ZOMBIE;
-    _schedule();
-    irq_enable();
+    release(&ptable.lock);
 }
 
 i64 new_process(u64 entry, u64 arg, char*name) {
@@ -57,11 +56,12 @@ i64 new_process(u64 entry, u64 arg, char*name) {
     p->ctx.x20 = arg;
     p->ctx.pc = (u64) ret_from_fork;
     p->ctx.sp = (u64) p + 4096;
-    
-    u64 pid = 1 + ptable.num_procs++;
-    p->pid = pid;
 
     p->next = NULL;
+
+    acquire(&ptable.lock);
+    u64 pid = 1 + ptable.num_procs++;
+    p->pid = pid;
     if(!ptable.head) {
         ptable.head = p;
         ptable.tail = p;
@@ -69,6 +69,7 @@ i64 new_process(u64 entry, u64 arg, char*name) {
         ptable.tail->next = p;
         ptable.tail = p;
     }
+    release(&ptable.lock);
     enable_preempt();
 
     return pid;
@@ -78,43 +79,37 @@ void _schedule() {
     irq_disable();
     u8 core = get_core();
     
-    //uart_puts("acquiring lock\n");
-    //__sync_fetch_and_add(&ptable.lock, 1);
     acquire(&ptable.lock);
-    //while(__atomic_test_and_set(&ptable.lock, 1));
-    //uart_puts("lock acquired\n");
     
-
     struct process *prev = ptable.current[core];
-    struct process *next = ptable.head;
-
-    if(!next) {
-        //uart_puts("releasing lock\n");
-        release(&ptable.lock);
-        return;
-    }
     
     if(prev->state == TASK_RUNNING) {
         ptable.tail->next = prev;
         prev->next = NULL;
         ptable.tail = prev;
     } else if(prev->state == TASK_ZOMBIE) {
-        free_page(prev);
+        //free_page(prev);
         prev = NULL;
     }
-    ptable.head = next->next;
-    if(!ptable.head) ptable.tail = NULL;
-    
-    next->next = NULL;
-    ptable.current[core] = next;
 
-    //uart_puts("releasing lock\n");
-    release(&ptable.lock);
+    struct process *next = ptable.head;
+    if(!next) {
+        release(&ptable.lock);
+        return;
+    }
+
+    ptable.head = ptable.head->next;
+    if(!ptable.head) ptable.tail = NULL;
+
+    ptable.current[core] = next;
+    ptable.current[core]->next = NULL;
 
     if(prev)
         cpu_switch_to(prev, next);
     else
         cpu_ctx_restore(prev, next);
+
+    release(&ptable.lock);
 }
 
 
@@ -126,6 +121,7 @@ void schedule() {
 
 
 void schedule_tail() {
+    release(&ptable.lock);
     irq_enable();
 	enable_preempt();
 }

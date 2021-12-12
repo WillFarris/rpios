@@ -36,6 +36,21 @@ u64 mod(u64 a, u64 b) {
     return a % b;
 }
 
+/*
+f32 Q_rsqrt(f32 n) {
+    u64 i;
+    f32 x2, y;
+    const f32 threehalfs = 1.5F;
+
+    x2 = n * 0.5F;
+    y = n;
+    i = * (long *) &y;
+    i = 0x5f3759df - (i >> 1);
+    y = * (float *) &i;
+    y = y * (threehalfs - (x2 * y * y));
+}
+*/
+
 u64 floor_sqrt(u64 x) 
 { 
     // Base cases 

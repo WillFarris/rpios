@@ -15,8 +15,10 @@ mmu_init_asm:
     msr tcr_el1, x2
     isb
 
+    //0001 0000 0000 0101 = 4101 = i-cache, d-cache, mmu enable bits
     mrs x0, sctlr_el1
-    orr x0, x0, #1
+    mov x1, #1
+    orr x0, x0, x1
     msr sctlr_el1, x0
     isb
     ret

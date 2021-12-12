@@ -56,9 +56,9 @@ void handle_irq()
             irq &= ~AUX_IRQ;
             while((REGS_AUX->mu_iir & 4) == 4)
             {
-                u8 c = uart_getc();
-                fbputc(uart_getc());
-                if(c == '\r') fbputc('\n');
+                //u8 c = uart_getc();
+                //fbputc(uart_getc());
+                //if(c == '\r') fbputc('\n');
                 
                 //shell();
             }
