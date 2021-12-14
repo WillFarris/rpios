@@ -88,8 +88,11 @@ void _schedule() {
         prev->next = NULL;
         ptable.tail = prev;
     } else if(prev->state == TASK_ZOMBIE) {
-        //free_page(prev);
+        free_page(prev);
         prev = NULL;
+        ptable.current[core] = NULL;
+        release(&ptable.lock);
+        return;
     }
 
     struct process *next = ptable.head;
@@ -126,21 +129,46 @@ void schedule_tail() {
 	enable_preempt();
 }
 
+void kill(u64 pid) {
+    acquire(&ptable.lock);
+    for(int i=0;i<4;++i) {
+        struct process *curproc = ptable.current[i];
+        if(curproc && curproc->pid == pid) {
+            curproc->state = TASK_ZOMBIE;
+            release(&ptable.lock);
+            irq_enable();
+            return;
+        }
+    }
+    struct process *cur = ptable.head;
+    while(cur) {
+        if(cur->pid == pid)  {
+            cur->state = TASK_ZOMBIE;
+            release(&ptable.lock);
+            return;
+        }
+        cur = cur->next;
+    }
+    release(&ptable.lock);
+}
+
+#define print_console printf
+
 void print_ptable() {
     irq_disable();
-    fbputc('\n');
-    fbputc('\r');
+    print_console('\n');
+    print_console('\r');
     acquire(&ptable.lock);
     struct process *head = ptable.head;
     struct process *core = NULL;
-    fbprintf("  cores:\n");
+    print_console("  cores:\n");
     for(int i=0;i<4;++i) {
         core = ptable.current[i];
-        fbprintf("   [core %d] 0x%X %s\n", i, core ? core->pid : 0, core ? ptable.current[i]->name : "<null>");
+        print_console("   [core %d] 0x%X %s\n", i, core ? core->pid : 0, core ? ptable.current[i]->name : "<null>");
     }
-    fbprintf("\n  not running\n");
+    print_console("\n  not running\n");
     while(head) {
-        fbprintf("   [pid %d] %s\n", head->pid, head->name);
+        print_console("   [pid %d] %s\n", head->pid, head->name);
         head = head->next;
     }
     release(&ptable.lock);

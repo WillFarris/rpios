@@ -9,8 +9,8 @@
 #include "schedule.h"
 #include "utils.h"
 
-#define print_console fbprintf
-#define print_console_c fbputc
+#define print_console printf
+#define print_console_c uart_putc
 
 extern u64 scheduler_ticks_per_second;
 
@@ -42,7 +42,7 @@ void exec(char **args)
         print_console("\n> ");
     } else if(strcmp(args[0], "clear") == 0)
     {
-        new_process((u64) fbclear, fb.bg, "clear screen");
+        new_process((u64) fbclear, 0, "clear screen");
     } else if(strcmp(args[0], "mod") == 0)
     {
         u64 a = strtol(args[1]);
@@ -59,9 +59,12 @@ void exec(char **args)
     } else if(strcmp(args[0], "set_sched_tps") == 0)
     {
         scheduler_ticks_per_second = strtol(args[1]);
+    } else if(strcmp(args[0], "kill") == 0)
+    {
+        kill(strtol(args[1]));
     } else if(strcmp(args[0], "help") == 0)
     {
-        print_console("Available commands:\n    gcd <a> <b>\n    phi <n>\n    lcm <a> <b>\n    ord <a> <m>\n    primefactors <n>\n    clear\n    mod <n> <m>\n    setres <w> <h>\n    ptable\n    set_sched_tps <scheduler ticks per second>\n    help\n\n> ");
+        print_console("Available commands:\n    gcd <a> <b>\n    phi <n>\n    lcm <a> <b>\n    ord <a> <m>\n    primefactors <n>\n    clear\n    mod <n> <m>\n    setres <w> <h>\n    ptable\n    set_sched_tps <scheduler ticks per second>\n    kill <pid>\n    help\n\n> ");
     } else
     {
         print_console("Unknown command: %s\n> ", args[0]);

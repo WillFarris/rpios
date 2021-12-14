@@ -19,12 +19,12 @@ struct FrameBuffer fb;
 void core_welcome() {
     u8 core = get_core();
     u64 sp = get_sp();
-    fbprintf("Core %d online with sp=0x%X\n", core, sp);
+    printf("Core %d online with sp=0x%X\n", core, sp);
 }
 
 void test(u32 id) {
     while(1) {
-        fbprintf("test proc: %d\n", id);
+        printf("test proc: %d\n", id);
         sys_timer_sleep_ms(2000);
     }
 }
@@ -84,10 +84,10 @@ void kernel_main()
     uart_init_alt();    
     init_printf(0, putc);
 
-    fbinit(DISPLAY_WIDTH, DISPLAY_HEIGHT);
+    //fbinit(DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
     printf("\n\nBooting Raspberry Pi 3\n\nBuilt "__TIME__" on "__DATE__"\n\n");
-    fbprintf("\n\nBooting Raspberry Pi 3\n\nBuilt "__TIME__" on "__DATE__"\n\n");
+    //fbprintf("\n\nBooting Raspberry Pi 3\n\nBuilt "__TIME__" on "__DATE__"\n\n");
     
     //enable_interrupt_controller();
     //fbprintf("Interrupt controller initialized\n");
@@ -102,7 +102,7 @@ void kernel_main()
     u8 red = fb.bg >> 16 & 0xFF;
     u8 green = fb.bg >> 8 & 0xFF;
     u8 blue = fb.bg & 0xFF;
-    printf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: r=%d, g=%d, b=%d\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, red, green, blue, fb.ptr);
+    //printf("\nFrameBuffer\n  width: %d\n  height: %d\n  pitch: %d\n  background: r=%d, g=%d, b=%d\n  address: 0x%X\n\n", fb.width, fb.height, fb.pitch, red, green, blue, fb.ptr);
 
     mmu_init();
 
@@ -115,11 +115,11 @@ void kernel_main()
     new_process((u64) test, 69, "test69");
     
     //new_process((u64) print_sys_info, 0, "sys_info");
-    new_process((u64) draw_rects, 0, "raspberry_pi_logo");
+    //new_process((u64) draw_rects, 0, "raspberry_pi_logo");
     new_process((u64) shell, 0, "shell");
 
-    core_execute(1, loop_schedule);
-    core_execute(2, loop_schedule);
+    //core_execute(1, loop_schedule);
+    //core_execute(2, loop_schedule);
     //core_execute(3, loop_schedule);
     
     loop_schedule();

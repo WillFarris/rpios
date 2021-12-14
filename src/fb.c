@@ -65,6 +65,9 @@ i32 fbinit(int pw, int ph) {
 }
 
 void fbclear(u32 color) {
+    if(!fb.ptr) {
+        return;
+    }
     // Invert R and B channels if in RGB mode
     if(fb.isrgb)
     {
