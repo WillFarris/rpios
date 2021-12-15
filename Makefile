@@ -3,7 +3,7 @@ ARMGNU ?= $(ARMPATH)aarch64-none-elf
 
 C_OPS = -Wall -nostdlib -nostartfiles -ffreestanding -mgeneral-regs-only -g -Iheaders
 ASM_OPS = -g -Iheaders
-QEMU_OPS = -s -M raspi3 -cpu cortex-a53 -serial null -serial stdio
+QEMU_OPS = -s -M raspi3 -cpu cortex-a53 -serial null -serial stdio -vnc :1
 
 BUILD_DIR = build
 SRC_DIR = src
