@@ -23,7 +23,6 @@ void core_timer_handle_irq()
 {
     u64 ticks = get_cntfrq_el0();
     write_cntp_tval(ticks / scheduler_ticks_per_second);
-    irq_enable();
     schedule();
 }
 
