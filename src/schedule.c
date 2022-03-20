@@ -33,10 +33,12 @@ void enable_preempt() {
 }
 
 void exit() {
-    u8 core = get_core();
+    irq_disable();
     acquire(&ptable.lock);
+    u8 core = get_core();
     ptable.current[core]->state = TASK_ZOMBIE;
     release(&ptable.lock);
+    schedule();
 }
 
 i64 new_process(u64 entry, u64 arg, char*name) {
@@ -75,27 +77,39 @@ i64 new_process(u64 entry, u64 arg, char*name) {
     return pid;
 }
 
-void _schedule() {
+void schedule() {
+
+    // Disable interrupts and lock ptable mutex
     irq_disable();
-    u8 core = get_core();
-    
     acquire(&ptable.lock);
-    
+    u8 core = get_core();
+
+    // Ger the process currently running on the CPU
     struct process *prev = ptable.current[core];
     
-    if(prev->state == TASK_RUNNING) {
+    // If the process currently on the CPU is still RUNNING,
+    // append it to the process list
+    if(prev && prev->state == TASK_RUNNING) {
         ptable.tail->next = prev;
+        prev->core_in_use = 0xFF;
         prev->next = NULL;
         ptable.tail = prev;
-    } else if(prev->state == TASK_ZOMBIE) {
+    }
+    // Otherwise if the process is to exit, cleanup here
+    else if(prev && prev->state == TASK_ZOMBIE) {
         free_page(prev);
         prev = NULL;
         ptable.current[core] = NULL;
-        release(&ptable.lock);
-        return;
+        printf("\nFreed ded proc\n> ");
     }
 
     struct process *next = ptable.head;
+    
+    while (next && next->state == TASK_ZOMBIE) {
+        //printf("Zombie process pid %d\n", next->pid);
+        //free_page(next);
+        next = next->next;
+    }
     if(!next) {
         release(&ptable.lock);
         return;
@@ -105,6 +119,7 @@ void _schedule() {
     if(!ptable.head) ptable.tail = NULL;
 
     ptable.current[core] = next;
+    ptable.current[core]->core_in_use = core;
     ptable.current[core]->next = NULL;
 
     if(prev)
@@ -115,21 +130,22 @@ void _schedule() {
     release(&ptable.lock);
 }
 
-
+/*
 void schedule() {
     //u32 core = get_core();
     //if(ptable.current[core]) ptable.current[core]->counter = 0;
     _schedule();
-}
+}*/
 
 
 void schedule_tail() {
     release(&ptable.lock);
     irq_enable();
-	enable_preempt();
+    enable_preempt();
 }
 
 void kill(u64 pid) {
+    irq_disable();
     acquire(&ptable.lock);
     for(int i=0;i<4;++i) {
         struct process *curproc = ptable.current[i];
@@ -145,11 +161,13 @@ void kill(u64 pid) {
         if(cur->pid == pid)  {
             cur->state = TASK_ZOMBIE;
             release(&ptable.lock);
+            irq_enable();
             return;
         }
         cur = cur->next;
     }
     release(&ptable.lock);
+    irq_enable();
 }
 
 #define print_console printf
@@ -171,6 +189,7 @@ void print_ptable() {
         print_console("   [pid %d] %s\n", head->pid, head->name);
         head = head->next;
     }
+    print_console("> ");
     release(&ptable.lock);
     irq_enable();
 }

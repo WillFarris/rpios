@@ -3,7 +3,7 @@ ARMGNU ?= $(ARMPATH)aarch64-none-elf
 
 C_OPS = -Wall -nostdlib -nostartfiles -ffreestanding -mgeneral-regs-only -g -Iheaders
 ASM_OPS = -g -Iheaders
-QEMU_OPS = -s -M raspi3 -cpu cortex-a53 -serial null -serial stdio -vnc :1
+QEMU_OPS = -s -M raspi3b -cpu cortex-a53 -serial null -serial stdio -vnc :1
 
 BUILD_DIR = build
 SRC_DIR = src
@@ -37,7 +37,7 @@ qemus: kernel8.img
 	qemu-system-aarch64 $(QEMU_OPS) -kernel $(BUILD_DIR)/kernel8.elf -S
 
 gdb:
-	aarch64-linux-gnu-gdb -q --se build/kernel8.elf
+	$(ARMGNU)-gdb -q --se build/kernel8.elf
 
 kernel8.img: $(SRC_DIR)/linker.ld $(OBJ_FILES)
 	mkdir -p $(BUILD_DIR)

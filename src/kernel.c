@@ -25,7 +25,9 @@ void core_welcome() {
 
 void loop_schedule() {
     printf("Starting scheduler on core %d\n", get_core());
-    while(1) schedule();
+    while(1) {
+        schedule();
+    }
 }
 
 void kernel_main() 
