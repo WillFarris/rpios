@@ -24,8 +24,9 @@ void test_print_and_exit(u64 a)
 void test_loop()
 {
     int i=0;
+    u64 pid = get_pid();
     while(1) {
-        printf("\niteration %d\n> ", i++);
+        printf("\npid %d iter %d\n> ", pid, i++);
         sys_timer_sleep_ms(2000);
     }
 }

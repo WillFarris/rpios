@@ -23,13 +23,6 @@ void core_welcome() {
     printf("Core %d online with sp=0x%X\n", core, sp);
 }
 
-void loop_schedule() {
-    printf("Starting scheduler on core %d\n", get_core());
-    while(1) {
-        schedule();
-    }
-}
-
 void kernel_main() 
 {
     uart_init_alt();    
@@ -43,15 +36,12 @@ void kernel_main()
 
     QA7->control_register = 0b00 << 8;
 
-    init_scheduler();
-    core_timer_init();
-
+    init_ptable();
     new_process((u64) shell, 0, "shell");
 
-    //core_execute(1, core_timer_init);
-    //core_execute(1, loop_schedule);
-    //core_execute(2, loop_schedule);
-    //core_execute(3, loop_schedule);
+    core_execute(1, start_scheduler);
+    core_execute(2, start_scheduler);
+    core_execute(3, start_scheduler);
 
-    loop_schedule();
+    start_scheduler();
 }

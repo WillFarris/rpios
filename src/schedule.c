@@ -7,19 +7,28 @@
 
 struct _ptable ptable;
 
-
-void init_scheduler() {
-    struct process *p = get_free_page();
-    p->state = TASK_RUNNING;
-    p->next = NULL;
-    strcpy(p->name, "init");
+void init_ptable() {
     ptable.head = NULL;
     ptable.tail = NULL;
     ptable.lock = 0;
     for(int i=0;i<4;++i) {
         ptable.current[i] = NULL;
     }
+}
+
+void start_scheduler() {
+    struct process *p = get_free_page();
+    p->state = TASK_RUNNING;
+    p->next = NULL;
+    strcpy(p->name, "init ");
+    p->name[5] = get_core() + '0';
+    p->name[6] = '\0';
     ptable.current[get_core()] = p;
+
+    core_timer_init();
+    while(1) {
+        schedule();
+    }
 }
 
 void disable_preempt() {
@@ -77,6 +86,18 @@ i64 new_process(u64 entry, u64 arg, char*name) {
     return pid;
 }
 
+u64 get_pid() {
+    irq_disable();
+    acquire(&ptable.lock);
+
+    u64 pid = ptable.current[get_core()]->pid;
+
+    release(&ptable.lock);
+    irq_enable();
+
+    return pid;
+}
+
 void schedule() {
 
     // Disable interrupts and lock ptable mutex
@@ -95,7 +116,7 @@ void schedule() {
         prev->next = NULL;
         ptable.tail = prev;
     }
-    // Otherwise if the process is to exit, cleanup here
+    // Otherwise if the previous process is now a zombie, cleanup
     else if(prev && prev->state == TASK_ZOMBIE) {
         free_page(prev);
         prev = NULL;
@@ -103,40 +124,32 @@ void schedule() {
         printf("\nFreed ded proc\n> ");
     }
 
-    struct process *next = ptable.head;
-    
-    while (next && next->state == TASK_ZOMBIE) {
-        //printf("Zombie process pid %d\n", next->pid);
-        //free_page(next);
-        next = next->next;
+    // Clean up any processes which were killed
+    while (ptable.head && ptable.head->state == TASK_ZOMBIE) {
+        free_page(ptable.head);
+        ptable.head = ptable.head->next;
     }
-    if(!next) {
+
+    // Next task to switch to is at the head of the list
+    struct process *next = ptable.head;
+    if(!next) { // Can't context switch if there's nothing to switch to
         release(&ptable.lock);
         return;
     }
 
+    // We removed the head of the list, so update the rest of the list accordingly
     ptable.head = ptable.head->next;
     if(!ptable.head) ptable.tail = NULL;
 
+    // Set which processor is to be running the process in the ptable
     ptable.current[core] = next;
     ptable.current[core]->core_in_use = core;
     ptable.current[core]->next = NULL;
 
-    if(prev)
-        cpu_switch_to(prev, next);
-    else
-        cpu_ctx_restore(prev, next);
-
+    // If there's a previous task still running, save it
+    cpu_switch_to(prev, next);
     release(&ptable.lock);
 }
-
-/*
-void schedule() {
-    //u32 core = get_core();
-    //if(ptable.current[core]) ptable.current[core]->counter = 0;
-    _schedule();
-}*/
-
 
 void schedule_tail() {
     release(&ptable.lock);
