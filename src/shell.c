@@ -72,7 +72,7 @@ void exec(char **args)
         fbinit(w, h);
     } else if(strcmp(args[0], "ptable") == 0)
     {
-        print_ptable();
+         new_process((u64) print_ptable, 0, "ptable");
     } else if(strcmp(args[0], "set_sched_tps") == 0)
     {
         scheduler_ticks_per_second = strtol(args[1]);

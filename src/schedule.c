@@ -121,7 +121,6 @@ void schedule() {
         free_page(prev);
         prev = NULL;
         ptable.current[core] = NULL;
-        printf("\nFreed ded proc\n> ");
     }
 
     // Clean up any processes which were killed
@@ -195,7 +194,7 @@ void print_ptable() {
     print_console("  cores:\n");
     for(int i=0;i<4;++i) {
         core = ptable.current[i];
-        print_console("   [core %d] 0x%X %s\n", i, core ? core->pid : 0, core ? ptable.current[i]->name : "<null>");
+        print_console("   [core %d] %d %s\n", i, core ? core->pid : 0, core ? ptable.current[i]->name : "<null>");
     }
     print_console("\n  not running\n");
     while(head) {
@@ -205,4 +204,5 @@ void print_ptable() {
     print_console("> ");
     release(&ptable.lock);
     irq_enable();
+    exit();
 }
