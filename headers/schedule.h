@@ -47,7 +47,8 @@ struct _ptable {
 void disable_preempt();
 void enable_preempt();
 
-void init_scheduler();
+void init_ptable();
+void start_scheduler();
 void schedule();
 i64 new_process(u64, u64, char*);
 void ret_from_fork();

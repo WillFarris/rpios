@@ -14,6 +14,23 @@
 
 extern u64 scheduler_ticks_per_second;
 
+void test_print_and_exit(u64 a)
+{
+    print_console("\nTest process message 1\n> ");
+    exit();
+    print_console("\nTest process message 2 (should never be printed)\n> ");
+}
+
+void test_loop()
+{
+    int i=0;
+    u64 pid = get_pid();
+    while(1) {
+        printf("\npid %d iter %d\n> ", pid, i++);
+        sys_timer_sleep_ms(2000);
+    }
+}
+
 void exec(char **args)
 {
     if(strcmp(args[0], "gcd") == 0)
@@ -62,9 +79,32 @@ void exec(char **args)
     } else if(strcmp(args[0], "kill") == 0)
     {
         kill(strtol(args[1]));
+    } else if(strcmp(args[0], "test_loop") == 0)
+    {
+        new_process((u64) test_loop, 0, "print_loop");
+    } else if(strcmp(args[0], "print_test") == 0)
+    {
+       new_process((u64) test_print_and_exit, 0, "test_process"); 
     } else if(strcmp(args[0], "help") == 0)
     {
-        print_console("Available commands:\n    gcd <a> <b>\n    phi <n>\n    lcm <a> <b>\n    ord <a> <m>\n    primefactors <n>\n    clear\n    mod <n> <m>\n    setres <w> <h>\n    ptable\n    set_sched_tps <scheduler ticks per second>\n    kill <pid>\n    help\n\n> ");
+        print_console("Available commands:\n"
+                      "    gcd <a> <b>\n"
+                      "    phi <n>\n"
+                      "    lcm <a> <b>\n"
+                      "    ord <a> <m>\n"
+                      "    primefactors <n>\n"
+                      "    clear\n"
+                      "    mod <n> <m>\n"
+                      "    setres <w> <h>\n"
+                      "    ptable\n"
+                      "    set_sched_tps <scheduler ticks per second>\n"
+                      "    kill <pid>\n"
+                      "    print_test\n"
+                      "    test_loop\n"
+                      ""
+                      ""
+                      "    help\n\n> "
+                      );
     } else
     {
         print_console("Unknown command: %s\n> ", args[0]);
