@@ -148,6 +148,7 @@ enter_el0:
 ret_from_fork:
    bl schedule_tail
    mov x0, x20
+   mov x1, x21
    blr x19
 
 .globl cpu_switch_to

@@ -20,9 +20,9 @@ void start_scheduler() {
     struct process *p = get_free_page();
     p->state = TASK_RUNNING;
     p->next = NULL;
-    strcpy(p->name, "init ");
-    p->name[5] = get_core() + '0';
-    p->name[6] = '\0';
+    strcpy(p->name, "kernel_");
+    p->name[7] = get_core() + '0';
+    p->name[8] = '\0';
     ptable.current[get_core()] = p;
 
     core_timer_init();
@@ -50,7 +50,7 @@ void exit() {
     schedule();
 }
 
-i64 new_process(u64 entry, u64 arg, char*name) {
+i64 new_process(u64 entry, char*name, u64 argc, char**argv) {
 
     disable_preempt();
     struct process *p = (struct process *) get_free_page();
@@ -64,7 +64,8 @@ i64 new_process(u64 entry, u64 arg, char*name) {
     p->preempt = 1;
     
     p->ctx.x19 = entry;
-    p->ctx.x20 = arg;
+    p->ctx.x20 = argc;
+    p->ctx.x21 = argv;
     p->ctx.pc = (u64) ret_from_fork;
     p->ctx.sp = (u64) p + 4096;
 
@@ -156,7 +157,10 @@ void schedule_tail() {
     enable_preempt();
 }
 
-void kill(u64 pid) {
+void kill(u64 argc, char**argv) {
+    if(argc < 2) return;
+    u64 pid = strtol(argv[1]);
+
     irq_disable();
     acquire(&ptable.lock);
     for(int i=0;i<4;++i) {
@@ -165,6 +169,7 @@ void kill(u64 pid) {
             curproc->state = TASK_ZOMBIE;
             release(&ptable.lock);
             irq_enable();
+            exit();
             return;
         }
     }
@@ -174,12 +179,14 @@ void kill(u64 pid) {
             cur->state = TASK_ZOMBIE;
             release(&ptable.lock);
             irq_enable();
+            exit();
             return;
         }
         cur = cur->next;
     }
     release(&ptable.lock);
     irq_enable();
+    exit();
 }
 
 #define print_console printf

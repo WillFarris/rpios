@@ -14,102 +14,49 @@
 
 extern u64 scheduler_ticks_per_second;
 
-void test_print_and_exit(u64 a)
+#define NUM_CMDS 4
+struct command shell_cmds[NUM_CMDS] = {
+    { "ptable", NULL, print_ptable },
+    { "kill", "<pid>", kill },
+    { "help", NULL, help },
+    { "test_loop", "<ms delay>", test_loop }
+};
+
+void math(int argc, char **argv)
 {
-    print_console("\nTest process message 1\n> ");
+    if(argc < 4) {
+        exit();
+        return;
+    }
+
     exit();
-    print_console("\nTest process message 2 (should never be printed)\n> ");
 }
 
-void test_loop()
+void test_loop(int argc, char **argv)
 {
+    int delay = 2000;
+    if(argc > 1)
+        delay = strtol(argv[1]);
     int i=0;
     u64 pid = get_pid();
     while(1) {
-        printf("\npid %d iter %d\n> ", pid, i++);
-        sys_timer_sleep_ms(2000);
+        u8 core = get_core();
+        printf("\ncore %d pid %d iter %d\n> ", core, pid, i++);
+        sys_timer_sleep_ms(delay);
     }
+    exit();
 }
 
-void exec(char **args)
-{
-    if(strcmp(args[0], "gcd") == 0)
-    {
-        u64 a = strtol(args[1]);
-        u64 b = strtol(args[2]);
-        print_console("%d\n> ", gcd(a, b));
-    } else if(strcmp(args[0], "phi") == 0)
-    {
-        u64 n = strtol(args[1]);
-        print_console("%d\n> ", phi(n));
-    } else if(strcmp(args[0], "lcm") == 0)
-    {
-        u64 n = strtol(args[1]);
-        u64 m = strtol(args[2]);
-        print_console("%d\n> ", lcm(n, m));
-    } else if(strcmp(args[0], "ord") == 0)
-    {
-        u64 a = strtol(args[1]);
-        u64 m = strtol(args[2]);
-        print_console("%d\n> ", ord(a, m));
-    } else if (strcmp(args[0], "primefactors") == 0)
-    {
-        u64 n = strtol(args[1]);
-        prime_factors(n);
-        print_console("\n> ");
-    } else if(strcmp(args[0], "clear") == 0)
-    {
-        new_process((u64) fbclear, 0, "clear screen");
-    } else if(strcmp(args[0], "mod") == 0)
-    {
-        u64 a = strtol(args[1]);
-        u64 b = strtol(args[2]);
-        print_console("%d\n> ", a % b);
-    }  else if(strcmp(args[0], "setres") == 0)
-    {
-        u64 w = strtol(args[1]);
-        u64 h = strtol(args[2]);
-        fbinit(w, h);
-    } else if(strcmp(args[0], "ptable") == 0)
-    {
-         new_process((u64) print_ptable, 0, "ptable");
-    } else if(strcmp(args[0], "set_sched_tps") == 0)
-    {
-        scheduler_ticks_per_second = strtol(args[1]);
-    } else if(strcmp(args[0], "kill") == 0)
-    {
-        kill(strtol(args[1]));
-    } else if(strcmp(args[0], "test_loop") == 0)
-    {
-        new_process((u64) test_loop, 0, "print_loop");
-    } else if(strcmp(args[0], "print_test") == 0)
-    {
-       new_process((u64) test_print_and_exit, 0, "test_process"); 
-    } else if(strcmp(args[0], "help") == 0)
-    {
-        print_console("Available commands:\n"
-                      "    gcd <a> <b>\n"
-                      "    phi <n>\n"
-                      "    lcm <a> <b>\n"
-                      "    ord <a> <m>\n"
-                      "    primefactors <n>\n"
-                      "    clear\n"
-                      "    mod <n> <m>\n"
-                      "    setres <w> <h>\n"
-                      "    ptable\n"
-                      "    set_sched_tps <scheduler ticks per second>\n"
-                      "    kill <pid>\n"
-                      "    print_test\n"
-                      "    test_loop\n"
-                      ""
-                      ""
-                      "    help\n\n> "
-                      );
-    } else
-    {
-        print_console("Unknown command: %s\n> ", args[0]);
+void help(int argc, char **argv) {
+    printf("Here are the available commands:\n");
+    for(int i=0;i<NUM_CMDS;++i) {
+        printf("  %s %s\n", shell_cmds[i].name, shell_cmds[i].arghint == 0 ? "" : shell_cmds[i].arghint);
     }
+    printf("\n> ");
+    exit();
 }
+
+
 
 void parse_command(char *str, char **args)
 {
@@ -129,7 +76,14 @@ void parse_command(char *str, char **args)
     }
     args[i++] = argstart;
     args[i] = 0;
-    exec(args);
+    
+    for(int n=0;n<NUM_CMDS;++n)
+    {
+        if(strcmp(args[0], shell_cmds[n].name) == 0)
+        {
+            new_process((u64) shell_cmds[n].entry, shell_cmds[n].name, i, args);
+        }
+    }
 }
 
 
@@ -141,8 +95,7 @@ void shell()
     char *cur = commandbuffer;
     u8 core = get_core();
 
-    print_console_c('>');
-    print_console_c(' ');
+    print_console("\nshell\n> ");
     while(1)
     {
         char c = uart_getc();

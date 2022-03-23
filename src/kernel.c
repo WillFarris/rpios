@@ -17,12 +17,6 @@
 
 struct FrameBuffer fb;
 
-void core_welcome() {
-    u8 core = get_core();
-    u64 sp = get_sp();
-    printf("Core %d online with sp=0x%X\n", core, sp);
-}
-
 void kernel_main() 
 {
     uart_init_alt();    
@@ -37,11 +31,11 @@ void kernel_main()
     QA7->control_register = 0b00 << 8;
 
     init_ptable();
-    new_process((u64) shell, 0, "shell");
+    new_process((u64) shell, "shell", 0, NULL);
 
     core_execute(1, start_scheduler);
     core_execute(2, start_scheduler);
     core_execute(3, start_scheduler);
-
+    
     start_scheduler();
 }

@@ -87,9 +87,7 @@ void mmu_init() {
                 (mair_attr << 2)  | // MAIR attribute index
                 (0b11      <<  0)   // valid page
             );
-            if(j == 8191) {
-                printf("Last entry in L3 table for L2 table %d at index 0x%X: 0x%X\n", i, j, translation_table.lower_level3[i][j]);
-            }
+            //printf("Last entry in L3 table for L2 table %d at index 0x%X: 0x%X\n", i, j, translation_table.lower_level3[i][j]);
         }
     }
 
