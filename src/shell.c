@@ -56,8 +56,6 @@ void help(int argc, char **argv) {
     exit();
 }
 
-
-
 void parse_command(char *str, char **args)
 {
     int i=0;
@@ -85,8 +83,6 @@ void parse_command(char *str, char **args)
         }
     }
 }
-
-
 
 void shell()
 {
