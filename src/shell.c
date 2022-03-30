@@ -12,6 +12,10 @@
 #define print_console printf
 #define print_console_c uart_putc
 
+
+#define CMD_BUFFER_SIZE 100
+#define MAX_SHELL_ARGS 10
+
 extern u64 scheduler_ticks_per_second;
 
 #define NUM_CMDS 4
@@ -56,65 +60,95 @@ void help(int argc, char **argv) {
     exit();
 }
 
-void parse_command(char *str, char **args)
-{
-    int i=0;
-    char *argstart = str;
+void parse_command(char * commandbuffer, char **args) {
+    int argc=0;
+    char *argstart = commandbuffer;
 
-    char * cur = str;
+    char * cur = commandbuffer;
     while(*cur)
     {
-        if(i > 9) return;
+        if(argc > MAX_SHELL_ARGS) return;
         if(*cur == ' ')
         {
-            args[i++] = argstart;
+            args[argc++] = argstart;
             *cur = 0;
             argstart = ++cur;
         } else ++cur;
     }
-    args[i++] = argstart;
-    args[i] = 0;
+    args[argc++] = argstart;
+    args[argc] = 0;
     
-    for(int n=0;n<NUM_CMDS;++n)
-    {
+    /*printf("Parsed command with %d args\n[ ", argc);
+    for(int i=0;i<argc;++i){
+        printf("(%d, %s) ", i, args[i]);
+    }
+    printf("]\n");*/
+    
+    for(int n=0;n<NUM_CMDS;++n) {
         if(strcmp(args[0], shell_cmds[n].name) == 0)
         {
-            new_process((u64) shell_cmds[n].entry, shell_cmds[n].name, i, args);
+            //printf("Starting process %s\n", shell_cmds[n].name);
+            new_process((u64) shell_cmds[n].entry, shell_cmds[n].name, argc, args);
+            //void (*fun_ptr)(int, char**) =  shell_cmds[n].entry;
+            //fun_ptr(0, NULL);
+        } else {
+            //printf("No match for %s vs. %s\n", commandbuffer, shell_cmds[n].name);
         }
     }
 }
 
 void shell()
 {
-    char commandbuffer[DISPLAY_WIDTH];
-    char * args[10];
-    char *cur = commandbuffer;
+    char * commandbuffer = get_free_page();
+    for(int i=0;i<CMD_BUFFER_SIZE;++i) {
+        commandbuffer[i] = 0;
+    }
+
+    char **args = commandbuffer+CMD_BUFFER_SIZE;
+    for(int i=0;i<MAX_SHELL_ARGS;++i) {
+        for(int j=0;j<CMD_BUFFER_SIZE;++j) {
+            args[i][j] = 0;
+        }
+    }
+
+    //printf("Command buffer at 0x%x\n", commandbuffer, commandbuffer);
+    //printf("Argument array at 0x%x\n", args, args);
+
     u8 core = get_core();
 
-    print_console("\nshell\n> ");
+    u32 ci = 0;
+    printf("\nshell\n> ");
     while(1)
     {
         char c = uart_getc();
         switch(c)
         {
             case 0x7F:
-                fb.cursor_x -= char_width;
+                print_console("Got 0x7F (backspace)\n");
+                /*fb.cursor_x -= char_width;
                 *(--cur) = 0;
                 --cur;
                 print_console_c(' ');
                 fb.cursor_x -= char_width;
+                /break;*/
                 break;
             case '\r':
-                print_console("\n\r> ");
-                *cur = 0;
-                cur = commandbuffer;
+                commandbuffer[ci] = 0;
+                ci = 0;
+
+                //uart_puts("\nParsing command buffer: [");
+                //uart_puts(commandbuffer);
+                uart_putc('\n');
                 parse_command(commandbuffer, args);
+                uart_puts("> ");
                 break;
             default:
                 print_console_c(c);
-                *cur = c;
+                commandbuffer[ci++] = c;
                 break;
         }
-        if(c != '\r') ++cur;
+        //if(c != '\r') ++cur;
     }
+    free_page(commandbuffer);
+    exit();
 }

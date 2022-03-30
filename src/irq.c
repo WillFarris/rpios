@@ -44,12 +44,10 @@ void enable_interrupt_controller()
 u64 elapsed_ticks[4];
 
 u32 irq_count = 0;
-void handle_irq()
-{
+void handle_irq() {
     //irq_disable();
     u32 irq = REGS_IRQ->irq0_pending_1;
-    while(irq)
-    {
+    while(irq) {
         // IRQ from UART
         if(irq & AUX_IRQ)
         {
@@ -80,8 +78,7 @@ void handle_irq()
     }
 
     u32 local_timer = LOCAL_TIMER->control_status;
-    if(local_timer & (1 << 31))
-    {
+    if(local_timer & (1 << 31)) {
         // Local timer has run out
         handle_local_timer_irq();
     }
@@ -89,6 +86,7 @@ void handle_irq()
     u32 core = get_core();
     u32 core_irq_source = QA7->core_irq_source[core];
     if(core_irq_source & 2) { // & ((1 << 12)-1)
+        //printf("[core %d] Core timer interrupt\n", core);
         core_timer_handle_irq();
     }
     //irq_enable();

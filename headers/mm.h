@@ -9,7 +9,10 @@
 
 u64 get_free_page();
 void free_page(void *);
+
+void init_page_tables();
 void mmu_init_asm();
 void mmu_init();
+void flush_cache(u64 address);
 u64 get_id_aa64mmfr0_el1();
 

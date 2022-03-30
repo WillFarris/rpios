@@ -1,5 +1,6 @@
 SECTIONS
 {
+    . = 0x80000;
 	.text : { *(.text.boot) *(.text) }
 	.rodata : { *(.rodata) }
 	.data : { 
@@ -55,6 +56,8 @@ SECTIONS
         __EL2_stack_core3 = .;
         __stack_end_core3__ = .;    
     }
+
+    . = ALIGN(65536);
 
 	.kernel_heap : {
 		.  = ALIGN(4);

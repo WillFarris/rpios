@@ -37,7 +37,7 @@ qemus: kernel8.img
 	qemu-system-aarch64 $(QEMU_OPS) -kernel $(BUILD_DIR)/kernel8.elf -S
 
 gdb:
-	$(ARMGNU)-gdb -q --se build/kernel8.elf
+	aarch64-linux-gnu-gdb -q --se build/kernel8.elf
 
 kernel8.img: $(SRC_DIR)/linker.ld $(OBJ_FILES)
 	mkdir -p $(BUILD_DIR)

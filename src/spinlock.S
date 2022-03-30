@@ -8,12 +8,15 @@ spin_lock:
     stlxr  w3, w2, [x0]
     cbnz   w3, .L4
     cbnz   w1, .L4
+    dmb sy
     ret
 
 .globl release
 release:
+    dmb sy
     mov w2, 0
     ldaxr  w1, [x0]
     stlxr w3, w2, [x0]
     cbnz w3, release
+    dmb sy
     ret
