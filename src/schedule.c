@@ -59,9 +59,11 @@ void start_scheduler() {
     printf("[core %d] created init task %s\n", core, p->name);
     release(&ptable.lock);
     irq_enable();
+
+    core_timer_init();
     
     while(1) {
-        //schedule();
+        schedule();
     }
 }
 

@@ -12,13 +12,13 @@ _start:
 
     cmp x5, #0
     beq core0_stack
-    
+
     cmp x5, #1
     beq core1_stack
-    
+
     cmp x5, #2
     beq core2_stack
-    
+
     cmp x5, #3
     beq core3_stack
 
@@ -53,7 +53,7 @@ set_stack:
     msr sp_el2, x4
 
     ldr x0, =SCTLR_VALUE_MMU_DISABLED
-    msr sctlr_el1, x0  
+    msr sctlr_el1, x0
 
     ldr x0, =HCR_VALUE
     msr hcr_el2, x0

@@ -29,7 +29,7 @@ void kernel_main()
     init_printf(0, putc);
 
     printf("\n\nBooting Raspberry Pi 3\n\nBuilt "__TIME__" on "__DATE__"\n\n");
-    
+
     init_page_tables();
     mmu_init();
     init_ptable();
@@ -38,9 +38,9 @@ void kernel_main()
 
     //new_process((u64) test_loop, "test_loop", 0, NULL);
 
-    //core_execute(1, secondary_startup);
-    //core_execute(2, secondary_startup);
-    //core_execute(3, secondary_startup);
+    core_execute(1, secondary_startup);
+    core_execute(2, secondary_startup);
+    core_execute(3, secondary_startup);
 
     //local_timer_init(1, 0);
     //local_timer_init(2, 0);

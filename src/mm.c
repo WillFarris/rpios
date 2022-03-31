@@ -53,11 +53,10 @@ void init_page_tables() {
                 mair_attr = 0;
             }
             
-            
             translation_table.lower_level3[i][j] = (
                 virt_addr         | // Virtual address
                 (0b1UL     << 10) | // Accessed
-                (0b11      <<  8) | // Inner?-sharable
+                (0b11      <<  8) | // Inner-sharable
                 (0b0       <<  7) | // Read-Write
                 (0b0       <<  6) | // Kernel only
                 (mair_attr <<  2) | // MAIR attribute index
@@ -95,7 +94,6 @@ void mmu_init() {
         (0b11111111 <<  8) | // Attr 1: Normal memory, Outer Write-Back Non-transient, RW
         (0b00000000 <<  0)   // Attr 0: Device memory, nGnRnE
     );
-
     
 
     u64 ttbr1_el1 = (u64) &translation_table.higher_level2;
