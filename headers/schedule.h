@@ -41,13 +41,13 @@ struct _ptable {
     struct process *head;
     struct process *tail;
     struct process * current[4];
-    volatile u64 lock;
+    volatile u64 * lock;
 } __attribute__ ((aligned (8)));
 
 void disable_preempt();
 void enable_preempt();
 
-void init_ptable();
+void init_ptable(u64 * lock_addr);
 void start_scheduler();
 void schedule();
 i64 new_process(u64, char*, u64, char **);

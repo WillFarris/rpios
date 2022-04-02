@@ -23,6 +23,17 @@ void secondary_startup() {
 }
 extern struct _ptable ptable;
 
+extern struct lock_table {
+    u64 ptable_lock;
+    u64 mem_map_lock;
+    u64 test_lock;
+} locks;
+
+void core_startup() {
+    mmu_init();
+    start_scheduler();
+}
+
 void kernel_main() 
 {
     uart_init_alt();    
@@ -30,30 +41,23 @@ void kernel_main()
 
     printf("\n\nBooting Raspberry Pi 3\n\nBuilt "__TIME__" on "__DATE__"\n\n");
 
-    init_page_tables();
-    mmu_init();
-    init_ptable();
+    locks.ptable_lock = 0;
+    locks.mem_map_lock = 0;
+    locks.test_lock = 0;
 
+    init_page_tables(&locks);
+    mmu_init();
+    init_ptable(&locks.ptable_lock);
     QA7->control_register = 0b00 << 8;
 
-    //new_process((u64) test_loop, "test_loop", 0, NULL);
-
-    core_execute(1, secondary_startup);
-    core_execute(2, secondary_startup);
-    core_execute(3, secondary_startup);
-
-    //local_timer_init(1, 0);
-    //local_timer_init(2, 0);
-    //local_timer_init(3, 0);
-
-    new_process((u64) test_loop, "test_loop", 0, NULL);
-    new_process((u64) test_loop, "test_loop", 0, NULL);
     new_process((u64) shell, "shell", 0, NULL);
 
-    core_timer_init();
+    core_execute(1, core_startup);
+    sys_timer_sleep_ms(100);
+    //core_execute(2, core_startup);
+    //core_execute(3, core_startup);
 
     start_scheduler();
-
 
     while(1) {}
 }

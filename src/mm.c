@@ -32,7 +32,7 @@ void print_pa_range_support(u8 ips) {
     );
 }
 
-void init_page_tables() {
+void init_page_tables(u8 * locks_page_addr) {
     printf("Populating %d level 2 translation tables\n", NUM_TABLES);
     for(int i=0;i<NUM_TABLES;i++) {
         u64 lvl2_addr = (u64)&(translation_table.lower_level3[i]) >> 16;
@@ -43,7 +43,7 @@ void init_page_tables() {
         
         for(int j=0;j<8192;++j) {
             u64 virt_addr = (i << 29) + (j << 16);
-            u64 mair_attr = 1;
+            u64 mair_attr = 4;
 
             // PBASE (start of MMIO) is 0x3F000000 on Pi 3
             // MMIO used by this program ends at 0x4000FFFF
@@ -51,6 +51,10 @@ void init_page_tables() {
             if(virt_addr >= PBASE && virt_addr <= 0x4000FFFF) {
                 //printf("[lvl2 table %d] Mapping device memory at 0x%X vs 0x%X\n", i, virt_addr, PBASE);
                 mair_attr = 0;
+            } else if (virt_addr == locks_page_addr) {
+                // Mark the page containing our mutex/semaphores as write-back to appease some weird hardware requirement in the manual
+                printf("[lvl2 table %d] Mapping lock structure at 0x%X vs 0x%X\n", i, virt_addr, locks_page_addr);
+                mair_attr = 1;
             }
             
             translation_table.lower_level3[i][j] = (
@@ -89,12 +93,12 @@ void mmu_init() {
     // 1: 0xFF - regular DRAM
     // 0: 0x04 - device memory
     set_mair_el1(
+        (0b01000100 << 32) | // Attr 4: Normal memory, Inner + Outer non-cacheable
         (0b10111011 << 24) | // Attr 3: Normal memory, Inner + Outer write-through non-transient, RW
         (0b00001100 << 16) | // Attr 2: Device memory, GRE
         (0b11111111 <<  8) | // Attr 1: Normal memory, Outer Write-Back Non-transient, RW
         (0b00000000 <<  0)   // Attr 0: Device memory, nGnRnE
     );
-    
 
     u64 ttbr1_el1 = (u64) &translation_table.higher_level2;
     u64 ttbr0_el1 = (u64) &translation_table.lower_level2;
@@ -102,10 +106,14 @@ void mmu_init() {
     printf("[core %d] MMU enabled\n", core);
 }
 
-static u64 malloc_lock = 0;
+extern struct lock_table {
+    u64 ptable_lock;
+    u64 mem_map_lock;
+    u64 test_lock;
+} locks;
 
 u64 get_free_page() {
-    acquire(&malloc_lock);
+    acquire(&locks.mem_map_lock);
     for(int i=0;i<NUM_PAGES;++i)
     {
         if(page_map[i] == 0)
@@ -114,21 +122,21 @@ u64 get_free_page() {
             flush_cache(&page_map[i]);
 
             u64 page_addr = &__kernel_heap_start + (i * PAGE_SIZE);
-            for(u64 i=0;i<PAGE_SIZE/8;++i) {
-                *((u64*) page_addr+i) = 0;
+            for(u64 j=0;j<PAGE_SIZE/8;++j) {
+                *((u64*) page_addr+j) = 0;
             }
-            release(&malloc_lock);
+            release(&locks.mem_map_lock);
             return page_addr;
         }
     }
     printf("Could not allocate page\n");
-    release(&malloc_lock);
+    release(&locks.mem_map_lock);
     return 0;
 }
 
 void free_page(void * page) {
-    acquire(&malloc_lock);
+    acquire(&locks.mem_map_lock);
     page_map[((u64) (page - (void*)&__kernel_heap_start)) / PAGE_SIZE] = 0;
     flush_cache(&page_map[((u64) (page - (void*)&__kernel_heap_start)) / PAGE_SIZE]);
-    release(&malloc_lock);
+    release(&locks.mem_map_lock);
 }

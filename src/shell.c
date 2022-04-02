@@ -13,8 +13,8 @@
 #define print_console_c uart_putc
 
 
-#define CMD_BUFFER_SIZE 100
-#define MAX_SHELL_ARGS 10
+#define CMD_BUFFER_SIZE 128
+#define MAX_SHELL_ARGS 16
 
 extern u64 scheduler_ticks_per_second;
 
@@ -100,19 +100,19 @@ void parse_command(char * commandbuffer, char **args) {
 void shell()
 {
     char * commandbuffer = get_free_page();
-    for(int i=0;i<CMD_BUFFER_SIZE;++i) {
+    /*for(int i=0;i<CMD_BUFFER_SIZE;++i) {
         commandbuffer[i] = 0;
-    }
+    }*/
 
     char **args = commandbuffer+CMD_BUFFER_SIZE;
-    for(int i=0;i<MAX_SHELL_ARGS;++i) {
+    /*for(int i=0;i<MAX_SHELL_ARGS;++i) {
         for(int j=0;j<CMD_BUFFER_SIZE;++j) {
             args[i][j] = 0;
         }
-    }
+    }*/
 
-    //printf("Command buffer at 0x%x\n", commandbuffer, commandbuffer);
-    //printf("Argument array at 0x%x\n", args, args);
+    printf("Command buffer at 0x%x\n", commandbuffer, commandbuffer);
+    printf("Argument array at 0x%x\n", args, args);
 
     u8 core = get_core();
 
