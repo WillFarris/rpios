@@ -29,7 +29,6 @@ mmu_init_asm:
     isb
 
     ic ialluis
-    ic iallu
     isb
 
     ret

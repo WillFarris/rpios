@@ -45,6 +45,7 @@ u64 elapsed_ticks[4];
 
 u32 irq_count = 0;
 void handle_irq() {
+    //printf("[core %d] Got irq %d\n", get_core());
     //irq_disable();
     u32 irq = REGS_IRQ->irq0_pending_1;
     while(irq) {

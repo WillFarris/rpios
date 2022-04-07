@@ -3,7 +3,8 @@
 #include "types.h"
 
 
-#define PAGE_SIZE 4096
+//#define PAGE_SIZE 4096
+#define PAGE_SIZE 65536
 #define NUM_PAGES 16777216/PAGE_SIZE
 
 

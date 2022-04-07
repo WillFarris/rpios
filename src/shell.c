@@ -18,26 +18,19 @@
 
 extern u64 scheduler_ticks_per_second;
 
-#define NUM_CMDS 4
+#define NUM_CMDS 2
 struct command shell_cmds[NUM_CMDS] = {
-    { "ptable", NULL, print_ptable },
     { "kill", "<pid>", kill },
-    { "help", NULL, help },
+    { "help", NULL, help }
+};
+
+#define NUM_PROGS 2
+struct command shell_progs[NUM_PROGS] = {
+    { "ptable", NULL, print_ptable },
     { "test_loop", "<ms delay>", test_loop }
 };
 
-void math(int argc, char **argv)
-{
-    if(argc < 4) {
-        exit();
-        return;
-    }
-
-    exit();
-}
-
-void test_loop(int argc, char **argv)
-{
+void test_loop(int argc, char **argv) {
     int delay = 2000;
     if(argc > 1)
         delay = strtol(argv[1]);
@@ -56,8 +49,11 @@ void help(int argc, char **argv) {
     for(int i=0;i<NUM_CMDS;++i) {
         printf("  %s %s\n", shell_cmds[i].name, shell_cmds[i].arghint == 0 ? "" : shell_cmds[i].arghint);
     }
-    printf("\n> ");
-    exit();
+    printf("\nHere are the available programs:\n");
+    for(int i=0;i<NUM_PROGS;++i) {
+        printf("  %s %s\n", shell_progs[i].name, shell_progs[i].arghint == 0 ? "" : shell_progs[i].arghint);
+    }
+    printf("\n");
 }
 
 void parse_command(char * commandbuffer, char **args) {
@@ -87,24 +83,29 @@ void parse_command(char * commandbuffer, char **args) {
     for(int n=0;n<NUM_CMDS;++n) {
         if(strcmp(args[0], shell_cmds[n].name) == 0)
         {
-            //printf("Starting process %s\n", shell_cmds[n].name);
-            new_process((u64) shell_cmds[n].entry, shell_cmds[n].name, argc, args);
-            //void (*fun_ptr)(int, char**) =  shell_cmds[n].entry;
-            //fun_ptr(0, NULL);
-        } else {
-            //printf("No match for %s vs. %s\n", commandbuffer, shell_cmds[n].name);
+            void (*fun_ptr)(int, char**) =  shell_cmds[n].entry;
+            fun_ptr(0, NULL);
+        }
+    }
+
+    for(int n=0;n<NUM_PROGS;++n) {
+        if(strcmp(args[0], shell_progs[n].name) == 0)
+        {
+            new_process((u64) shell_progs[n].entry, shell_progs[n].name, argc, args);
         }
     }
 }
 
-void shell()
-{
-    char * commandbuffer = get_free_page();
+char commandbuffer[CMD_BUFFER_SIZE];
+char args[MAX_SHELL_ARGS][CMD_BUFFER_SIZE];
+
+void shell() {
+    //char * commandbuffer = get_free_page();
     /*for(int i=0;i<CMD_BUFFER_SIZE;++i) {
         commandbuffer[i] = 0;
     }*/
 
-    char **args = commandbuffer+CMD_BUFFER_SIZE;
+    //char **args = commandbuffer+CMD_BUFFER_SIZE;
     /*for(int i=0;i<MAX_SHELL_ARGS;++i) {
         for(int j=0;j<CMD_BUFFER_SIZE;++j) {
             args[i][j] = 0;
@@ -118,11 +119,9 @@ void shell()
 
     u32 ci = 0;
     printf("\nshell\n> ");
-    while(1)
-    {
+    while(1) {
         char c = uart_getc();
-        switch(c)
-        {
+        switch(c) {
             case 0x7F:
                 print_console("Got 0x7F (backspace)\n");
                 /*fb.cursor_x -= char_width;

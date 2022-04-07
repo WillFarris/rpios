@@ -59,7 +59,7 @@ SECTIONS
 
     . = ALIGN(65536);
     locks = .;
-    . = . + 65536;
+    . = locks + 65536;
 
     . = ALIGN(65536);
 	.kernel_heap : {

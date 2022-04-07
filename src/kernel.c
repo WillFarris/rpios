@@ -32,6 +32,17 @@ extern struct lock_table {
 void core_startup() {
     mmu_init();
     start_scheduler();
+    while(1) {}
+}
+
+void shell_core() {
+    mmu_init();
+    shell();
+    while(1) {}
+}
+
+void print_sctlr() {
+    printf("[core %d] sctlr_el1: 0x%X\n", get_core(), get_sctlr_el1());
 }
 
 void kernel_main() 
@@ -47,17 +58,35 @@ void kernel_main()
 
     init_page_tables(&locks);
     mmu_init();
+    core_execute(1, mmu_init);
+    sys_timer_sleep_ms(100);
+    core_execute(2, mmu_init);
+    sys_timer_sleep_ms(100);
+    core_execute(3, mmu_init);
+    sys_timer_sleep_ms(100);
+
     init_ptable(&locks.ptable_lock);
     QA7->control_register = 0b00 << 8;
 
-    new_process((u64) shell, "shell", 0, NULL);
-
-    core_execute(1, core_startup);
+    //new_process((u64) shell, "shell", 0, NULL);
+    //start_scheduler();
+    //irq_disable();
+    core_execute(1, print_sctlr);
     sys_timer_sleep_ms(100);
-    //core_execute(2, core_startup);
-    //core_execute(3, core_startup);
+    core_execute(2, print_sctlr);
+    sys_timer_sleep_ms(100);
+    core_execute(3, print_sctlr);
+    sys_timer_sleep_ms(100);
 
-    start_scheduler();
+    //core_execute(1, start_scheduler);
+    sys_timer_sleep_ms(100);
+    core_execute(2, start_scheduler);
+    sys_timer_sleep_ms(100);
+    //core_execute(3, start_scheduler);
+    sys_timer_sleep_ms(100);
+
+    printf("[core %d] sctlr_el1: 0x%X\n", get_core(), get_sctlr_el1());
+    shell();
 
     while(1) {}
 }
