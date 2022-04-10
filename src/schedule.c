@@ -95,7 +95,6 @@ i64 new_process(u64 entry, char*name, u64 argc, char**argv) {
     if(!p) return 0;
 
     strcpy(p->name, name);
-
     p->priority = 1;
     p->state = TASK_RUNNING;
     p->counter = p->priority;
@@ -104,7 +103,7 @@ i64 new_process(u64 entry, char*name, u64 argc, char**argv) {
     p->ctx.x20 = argc;
     p->ctx.x21 = argv;
     p->ctx.pc = (u64) ret_from_fork;
-    p->ctx.sp = (u64) p + sizeof(struct process) + 4096;
+    p->ctx.sp = (u64) p + 4096;
     printf("new process at 0x%X has stack starting at 0x%X\n", p, p->ctx.sp);
     p->next = NULL;
 
@@ -212,8 +211,10 @@ void schedule() {
     flush_cache(&ptable.current[core]);
 
     // Perform the context switch
-    if(prev)
+    if(prev) {
+        printf("[core %d] Switching from process 0x%X to process 0x%X\n", core, prev, next);
         cpu_switch_to(prev, next);
+    }
     release(ptable.lock);
 }
 

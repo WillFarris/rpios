@@ -153,8 +153,7 @@ ret_from_fork:
 
 .globl cpu_switch_to
 cpu_switch_to:
-	mov	x10, #0
-	add	x8, x0, x10
+	mov	x8, x0
 	mov	x9, sp
 	stp	x19, x20, [x8], #16		// store callee-saved registers
 	stp	x21, x22, [x8], #16
@@ -165,7 +164,7 @@ cpu_switch_to:
 	str	x30, [x8]
 .globl cpu_ctx_restore
 cpu_ctx_restore:
-	add	x8, x1, x10
+	mov	x8, x1
 	ldp	x19, x20, [x8], #16		// restore callee-saved registers
 	ldp	x21, x22, [x8], #16
 	ldp	x23, x24, [x8], #16

@@ -16,7 +16,7 @@ struct context {
     u64 fp;
     u64 sp;
     u64 pc;
-};
+} __attribute__ ((aligned (16)));
 
 enum pstate {
     TASK_SLEEP,
@@ -34,7 +34,7 @@ struct process {
     u64 pid;
     u8 core_in_use;
     struct process *next;
-};
+} __attribute__ ((aligned (16)));
 
 struct _ptable {
     u64 num_procs;
