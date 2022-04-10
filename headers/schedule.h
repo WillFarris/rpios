@@ -27,7 +27,7 @@ enum pstate {
 struct process {
     struct context ctx;
     enum pstate state;
-    char name[20];
+    char name[32];
     u64 counter;
     u64 priority;
     u64 preempt;

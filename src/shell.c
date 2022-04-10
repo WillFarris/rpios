@@ -18,15 +18,17 @@
 
 extern u64 scheduler_ticks_per_second;
 
-#define NUM_CMDS 2
+#define NUM_CMDS 3
 struct command shell_cmds[NUM_CMDS] = {
+    { "ptable", NULL, print_ptable },
+    //{ "print_proc_list", NULL, print_proc_list },
     { "kill", "<pid>", kill },
     { "help", NULL, help }
 };
 
-#define NUM_PROGS 2
+#define NUM_PROGS 1
 struct command shell_progs[NUM_PROGS] = {
-    { "ptable", NULL, print_ptable },
+    
     { "test_loop", "<ms delay>", test_loop }
 };
 

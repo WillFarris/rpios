@@ -33,13 +33,21 @@ void core_startup() {
     mmu_init();
     print_sctlr();
     start_scheduler();
-    while(1) {}
+    //while(1) {}
 }
 
 void shell_core() {
     mmu_init();
     shell();
     while(1) {}
+}
+
+void start_timed_scheduler() {
+    irq_enable();
+    core_timer_init();
+    while(1) {
+        schedule();
+    }
 }
 
 void core_draw_pi_logo() {
@@ -68,7 +76,16 @@ void kernel_main()
     init_ptable(&locks.ptable_lock);
     QA7->control_register = 0b00 << 8;
 
+    new_process((u64) test_loop, "test_loop", 0, NULL);
+
     core_execute(1, core_startup);
+    sys_timer_sleep_ms(100);
+    core_execute(2, core_startup);
+    sys_timer_sleep_ms(100);
+
+    core_execute(2, start_timed_scheduler);
+
+    print_ptable();
 
     printf("[core %d] sctlr_el1: 0x%X\n", get_core(), get_sctlr_el1());
     shell();
