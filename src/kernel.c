@@ -51,7 +51,8 @@ void start_timed_scheduler() {
 }
 
 void core_draw_pi_logo() {
-    draw_pi_logo(120 * get_core(), 0);
+    draw_pi_logo(0, 0);
+    exit();
 }
 
 void print_sctlr() {
@@ -69,6 +70,9 @@ void kernel_main()
     locks.ptable_lock = 0;
     locks.mem_map_lock = 0;
     locks.test_lock = 0;
+    printf("Initialized lock structure at address 0x%X\n", &locks);
+
+    fbinit(800, 600);
 
     init_page_tables(&locks);
     mmu_init();
@@ -76,19 +80,24 @@ void kernel_main()
     init_ptable(&locks.ptable_lock);
     QA7->control_register = 0b00 << 8;
 
-    new_process((u64) test_loop, "test_loop", 0, NULL);
-
     core_execute(1, core_startup);
     sys_timer_sleep_ms(100);
     core_execute(2, core_startup);
     sys_timer_sleep_ms(100);
+    core_execute(3, core_startup);
+    sys_timer_sleep_ms(100);
 
+    core_execute(1, start_timed_scheduler);
     core_execute(2, start_timed_scheduler);
+    core_execute(3, start_timed_scheduler);
 
     print_ptable();
 
     printf("[core %d] sctlr_el1: 0x%X\n", get_core(), get_sctlr_el1());
-    shell();
 
-    while(1) {}
+    new_process((u64) shell, "shell", 0, NULL);
+    //new_process((u64) test_loop, "test_loop", 0, NULL);
+
+    start_scheduler();
+    start_timed_scheduler();
 }

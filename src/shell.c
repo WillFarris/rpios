@@ -2,6 +2,7 @@
 #include "types.h"
 #include "math.h"
 #include "font.h"
+#include "gfx.h"
 #include "string.h"
 #include "fb.h"
 #include "printf.h"
@@ -26,9 +27,9 @@ struct command shell_cmds[NUM_CMDS] = {
     { "help", NULL, help }
 };
 
-#define NUM_PROGS 1
+#define NUM_PROGS 2
 struct command shell_progs[NUM_PROGS] = {
-    
+    { "pi_logo", "<x> <y>", draw_pi_logo },
     { "test_loop", "<ms delay>", test_loop }
 };
 
@@ -86,7 +87,7 @@ void parse_command(char * commandbuffer, char **args) {
         if(strcmp(args[0], shell_cmds[n].name) == 0)
         {
             void (*fun_ptr)(int, char**) =  shell_cmds[n].entry;
-            fun_ptr(0, NULL);
+            fun_ptr(argc, args);
         }
     }
 

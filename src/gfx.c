@@ -3,7 +3,12 @@
 #include "types.h"
 #include "pi_logo.h"
 
-void draw_pi_logo(u32 x, u32 y) {
+void draw_pi_logo(int argc, char ** argv) {
+  if(argc < 3) {
+    exit();
+  }
+  u32 x = strtol(argv[1]);
+  u32 y = strtol(argv[2]);
   //acquire(&fb.lock);
   u32 *in = pi_logo.pixel_data;
   u32 *out = (u32 *) fb.ptr + x + (fb.width * y);
@@ -23,6 +28,7 @@ void draw_pi_logo(u32 x, u32 y) {
     }
     out += fb.width - pi_logo.width;
   }
+  exit();
   //release(&fb.lock);
 }
 
