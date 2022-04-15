@@ -143,8 +143,8 @@ u64 get_pid() {
 void schedule() {
     u8 core = get_core();
 
-    if(cnt++ % 100000 == 0)
-        printf("[core %d] Entered scheduler\n", core);
+    //if(cnt++ % 100000 == 0)
+    //    printf("[core %d] Entered scheduler\n", core);
 
     // Disable interrupts and lock ptable mutex
     irq_disable();
@@ -242,7 +242,7 @@ void print_ptable() {
     
     u8 core = get_core();
     u64 lock_val = *ptable.lock;
-    printf("[core %d] core vs. lock is %d vs %d, state is %s", core, core + 1, lock_val, lock_val > 0 ? "LOCKED" : "UNLOCKED");
+    //printf("[core %d] core vs. lock is %d vs %d, state is %s", core, core + 1, lock_val, lock_val > 0 ? "LOCKED" : "UNLOCKED");
     
     print_console("\ncores:\n");
     struct process *head = ptable.head;

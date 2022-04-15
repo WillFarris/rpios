@@ -27,11 +27,17 @@ struct command shell_cmds[NUM_CMDS] = {
     { "help", NULL, help }
 };
 
-#define NUM_PROGS 2
+#define NUM_PROGS 4
 struct command shell_progs[NUM_PROGS] = {
     { "pi_logo", "<x> <y>", draw_pi_logo },
-    { "test_loop", "<ms delay>", test_loop }
+    { "test_loop", "<ms delay>", test_loop },
+    { "colors", "<x> <y>", rainbow_square },
+    { "clear", NULL, clear_framebuffer }
 };
+
+void clear_framebuffer(int argc, char **argv) {
+    fbclear(0);
+}
 
 void test_loop(int argc, char **argv) {
     int delay = 2000;
@@ -44,7 +50,6 @@ void test_loop(int argc, char **argv) {
         printf("\ncore %d pid %d iter %d\n> ", core, pid, i++);
         sys_timer_sleep_ms(delay);
     }
-    exit();
 }
 
 void help(int argc, char **argv) {
@@ -99,21 +104,19 @@ void parse_command(char * commandbuffer, char **args) {
     }
 }
 
-char commandbuffer[CMD_BUFFER_SIZE];
-char args[MAX_SHELL_ARGS][CMD_BUFFER_SIZE];
+static char commandbuffer[CMD_BUFFER_SIZE];
+static char args[MAX_SHELL_ARGS][CMD_BUFFER_SIZE];
 
 void shell() {
-    //char * commandbuffer = get_free_page();
-    /*for(int i=0;i<CMD_BUFFER_SIZE;++i) {
+    for(int i=0;i<CMD_BUFFER_SIZE;++i) {
         commandbuffer[i] = 0;
-    }*/
+    }
 
-    //char **args = commandbuffer+CMD_BUFFER_SIZE;
-    /*for(int i=0;i<MAX_SHELL_ARGS;++i) {
+    for(int i=0;i<MAX_SHELL_ARGS;++i) {
         for(int j=0;j<CMD_BUFFER_SIZE;++j) {
             args[i][j] = 0;
         }
-    }*/
+    }
 
     printf("Command buffer at 0x%x\n", commandbuffer, commandbuffer);
     printf("Argument array at 0x%x\n", args, args);
@@ -151,6 +154,5 @@ void shell() {
         }
         //if(c != '\r') ++cur;
     }
-    free_page(commandbuffer);
     exit();
 }

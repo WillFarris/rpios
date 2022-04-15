@@ -150,6 +150,7 @@ ret_from_fork:
    mov x0, x20
    mov x1, x21
    blr x19
+   bl exit
 
 .globl cpu_switch_to
 cpu_switch_to:
