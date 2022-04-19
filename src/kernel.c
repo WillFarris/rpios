@@ -31,15 +31,9 @@ extern struct lock_table {
 
 void core_startup() {
     mmu_init();
-    print_sctlr();
+    //print_sctlr();
     start_scheduler();
     //while(1) {}
-}
-
-void shell_core() {
-    mmu_init();
-    shell();
-    while(1) {}
 }
 
 void start_timed_scheduler() {
@@ -75,29 +69,37 @@ void kernel_main()
     fbinit(800, 600);
 
     init_page_tables(&locks);
+    u8 ips = (u8)(get_id_aa64mmfr0_el1() & 0xF);
+    u64 t0sz = 64 - 30;
+    print_pa_range_support(ips);
     mmu_init();
 
     init_ptable(&locks.ptable_lock);
     QA7->control_register = 0b00 << 8;
 
+    new_process((u64) shell, "shell", 0, NULL);
+
     core_execute(1, core_startup);
     sys_timer_sleep_ms(100);
     core_execute(2, core_startup);
     sys_timer_sleep_ms(100);
-    core_execute(3, core_startup);
-    sys_timer_sleep_ms(100);
+    //core_execute(3, core_startup);
+    //sys_timer_sleep_ms(100);
 
     core_execute(1, start_timed_scheduler);
+    sys_timer_sleep_ms(100);
     core_execute(2, start_timed_scheduler);
-    core_execute(3, start_timed_scheduler);
+    sys_timer_sleep_ms(100);
+    //core_execute(3, start_timed_scheduler);
+    //sys_timer_sleep_ms(100);
 
-    print_ptable();
+    //print_ptable();
 
-    printf("[core %d] sctlr_el1: 0x%X\n", get_core(), get_sctlr_el1());
+    //printf("[core %d] sctlr_el1: 0x%X\n", get_core(), get_sctlr_el1());
 
-    new_process((u64) shell, "shell", 0, NULL);
+    
     //new_process((u64) test_loop, "test_loop", 0, NULL);
 
-    start_scheduler();
-    start_timed_scheduler();
+    //start_scheduler();
+    //start_timed_scheduler();
 }

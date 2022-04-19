@@ -59,7 +59,7 @@ void start_scheduler() {
     printf("[core %d] created init task %s\n", core, p->name);
     release(ptable.lock);
 
-    print_ptable();
+    //print_ptable();
     //irq_enable();
 
     //core_timer_init();
@@ -155,6 +155,7 @@ void schedule() {
     while(ptable.head && ptable.head->state == TASK_ZOMBIE) {
         struct process *temp = ptable.head;
         ptable.head = ptable.head->next;
+        flush_cache(ptable.head);
         free_page(temp);
     }
 
@@ -163,6 +164,8 @@ void schedule() {
     if(!ptable.head) {
         //printf("[core %d] No process to switch to! (prev = 0x%X, next = 0x%X)\n", core, ptable.current[core], ptable.head);
         ptable.tail = NULL;
+        __asm volatile ("dsb sy");
+        flush_cache(ptable.tail);
         release(ptable.lock);
         irq_enable();
         return;
@@ -172,6 +175,9 @@ void schedule() {
     // Pull the "next" task from the list
     ptable.head = ptable.head->next;
     if(!ptable.head) ptable.tail = NULL;
+
+    flush_cache(ptable.head);
+    flush_cache(ptable.tail);
 
     // Move the current task from the list of currently running tasks
     // to the end of the task list
@@ -189,6 +195,13 @@ void schedule() {
     // Switch to the next task
     //printf("[core %d] Switching from 0x%X to process 0x%X\n", core, prev, next);
     ptable.current[core] = next;
+    flush_cache(&ptable.current[core]);
+    flush_cache_process(ptable.current[core]);
+    struct process * c = ptable.head;
+    while(c) {
+        flush_cache_process(c);
+        c = c->next;
+    }
     cpu_switch_to(prev, next);
     release(ptable.lock);
 }
@@ -212,6 +225,7 @@ void kill(u64 argc, char**argv) {
         if(cur && cur->pid == pid) {
             printf("[core %d] Marking pid %d as TASK_ZOMBIE\n", get_core(), pid);
             cur->state = TASK_ZOMBIE;
+            flush_cache(cur->state);
             release(ptable.lock);
             return;
         }
@@ -222,6 +236,7 @@ void kill(u64 argc, char**argv) {
         if(cur->pid == pid) {
             printf("[core %d] Marking pid %d as TASK_ZOMBIE\n", get_core(), pid);
             cur->state = TASK_ZOMBIE;
+            flush_cache(cur->state);
             release(ptable.lock);
             return;
         }
@@ -235,10 +250,10 @@ void kill(u64 argc, char**argv) {
 #define print_console printf
 
 void print_ptable() {
-    flush_cache_ptable();
-
     irq_disable();
     acquire(ptable.lock);
+
+    __asm volatile ("dsb sy; isb sy");
     
     u8 core = get_core();
     u64 lock_val = *ptable.lock;

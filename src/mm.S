@@ -25,10 +25,8 @@ mmu_init_asm:
     isb
 
     mov x0, #0
-    tlbi aside1, x0
-    isb
-
-    ic ialluis
+    tlbi vmalle1
+    dsb
     isb
 
     ret

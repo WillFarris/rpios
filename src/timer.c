@@ -9,7 +9,7 @@
 
 u32 cur_val_1 = 0;
 u32 cur_val_3 = 0;
-u64 scheduler_ticks_per_second = 2;
+u64 scheduler_ticks_per_second = 100;
 
 void core_timer_init()
 {

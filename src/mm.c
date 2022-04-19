@@ -60,7 +60,7 @@ void init_page_tables(u8 * locks_page_addr) {
             translation_table.lower_level3[i][j] = (
                 virt_addr         | // Virtual address
                 (0b1UL     << 10) | // Accessed
-                (0b11      <<  8) | // Inner-sharable
+                (0b10      <<  8) | // Outer-sharable
                 (0b0       <<  7) | // Read-Write
                 (0b0       <<  6) | // Kernel only
                 (mair_attr <<  2) | // MAIR attribute index
@@ -74,9 +74,6 @@ void init_page_tables(u8 * locks_page_addr) {
 void mmu_init() {
     u8 core = get_core();
     printf("[core %d] Turning on MMU\n", core);
-    //u8 ips = (u8)(get_id_aa64mmfr0_el1() & 0xF);
-    //u64 t0sz = 64 - 30;
-    //print_pa_range_support(ips);
     u64 tcr_el1 =
         (0b0LL      << 37) | // TBI0,  Top byte used in address calculation
         (0b010LL    << 32) | // IPS,   40 bit virtual address
