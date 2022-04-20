@@ -26,7 +26,7 @@ mmu_init_asm:
 
     mov x0, #0
     tlbi vmalle1
-    dsb
+    dsb sy
     isb
 
     ret

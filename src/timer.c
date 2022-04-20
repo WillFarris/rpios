@@ -9,22 +9,27 @@
 
 u32 cur_val_1 = 0;
 u32 cur_val_3 = 0;
-u64 scheduler_ticks_per_second = 100;
+u64 scheduler_ticks_per_second = 16;
 
-void core_timer_init()
-{
-    write_cntp_tval(1000);
+void core_timer_init() {
+    u8 core = get_core();
+
+    u64 freq = get_cntfrq_el0();
+    printf("[core %d] cntfrq_el0 = %d\n", core, freq);
+    u64 timer = freq / scheduler_ticks_per_second;
+    write_cntp_tval(timer);
     enable_cntp();
-    u32 core = get_core();
     QA7->core_timer_interrupt_control[core] = 0xF;
 }
 
-void core_timer_handle_irq()
-{
-    u8 core = get_core();
-    u64 ticks = get_cntfrq_el0();
-    write_cntp_tval(ticks / scheduler_ticks_per_second);
+void core_timer_handle_irq() {
+    u64 freq = get_cntfrq_el0();
+    u64 timer = freq / scheduler_ticks_per_second;
+    write_cntp_tval(timer);
+
     irq_enable();
+
+    //u8 core = get_core();
     //printf("[core %d] Handled core timer interrupt by scheduler\n", core);
     schedule();
 }

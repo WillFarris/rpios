@@ -40,7 +40,7 @@ void start_timed_scheduler() {
     irq_enable();
     core_timer_init();
     while(1) {
-        schedule();
+        //schedule();
     }
 }
 
@@ -66,7 +66,7 @@ void kernel_main()
     locks.test_lock = 0;
     printf("Initialized lock structure at address 0x%X\n", &locks);
 
-    fbinit(800, 600);
+    fbinit(1920, 1080);
 
     init_page_tables(&locks);
     u8 ips = (u8)(get_id_aa64mmfr0_el1() & 0xF);
@@ -83,23 +83,22 @@ void kernel_main()
     sys_timer_sleep_ms(100);
     core_execute(2, core_startup);
     sys_timer_sleep_ms(100);
-    //core_execute(3, core_startup);
-    //sys_timer_sleep_ms(100);
+    core_execute(3, core_startup);
+    sys_timer_sleep_ms(100);
 
     core_execute(1, start_timed_scheduler);
     sys_timer_sleep_ms(100);
     core_execute(2, start_timed_scheduler);
     sys_timer_sleep_ms(100);
-    //core_execute(3, start_timed_scheduler);
-    //sys_timer_sleep_ms(100);
+    core_execute(3, start_timed_scheduler);
+    sys_timer_sleep_ms(100);
 
     //print_ptable();
 
     //printf("[core %d] sctlr_el1: 0x%X\n", get_core(), get_sctlr_el1());
 
-    
     //new_process((u64) test_loop, "test_loop", 0, NULL);
 
-    //start_scheduler();
-    //start_timed_scheduler();
+    start_scheduler();
+    start_timed_scheduler();
 }

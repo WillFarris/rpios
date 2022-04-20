@@ -142,6 +142,7 @@ u64 get_pid() {
 
 void schedule() {
     u8 core = get_core();
+    //printf("[core %d] Running scheduler\n", core);
 
     //if(cnt++ % 100000 == 0)
     //    printf("[core %d] Entered scheduler\n", core);

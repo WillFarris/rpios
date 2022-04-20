@@ -68,10 +68,12 @@ void uart_putc(const char c)
     }
     while(!(REGS_AUX->mu_lsr & 0x20));
     REGS_AUX->mu_io = c;
+    __asm volatile ("dmb sy");
 }
 
 char uart_getc()
 {
+    __asm volatile ("dmb sy");
     while(!(REGS_AUX->mu_lsr & 1));
     return REGS_AUX->mu_io & 0xFF;
 }
