@@ -78,7 +78,7 @@ void mmu_init() {
         (0b0LL      << 37) | // TBI0,  Top byte used in address calculation
         (0b010LL    << 32) | // IPS,   40 bit virtual address
         (0b01LL     << 14) | // TG0,   64KiB
-        (0b11LL     << 12) | // SH0,   Inner-sharable
+        (0b10LL     << 12) | // SH0,   Outer-sharable
         (0b00LL     << 10) | // ORGN0, Write back read-alloc write-alloc cacheable
         (0b00LL     <<  8) | // IRGN0, Write back read-alloc write-alloc cacheable
         (0b0LL      <<  7) | // EPD0,  Enable TTBR0 walks

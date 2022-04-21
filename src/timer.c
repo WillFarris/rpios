@@ -9,7 +9,7 @@
 
 u32 cur_val_1 = 0;
 u32 cur_val_3 = 0;
-u64 scheduler_ticks_per_second = 16;
+u64 scheduler_ticks_per_second = 8;
 
 void core_timer_init() {
     u8 core = get_core();
@@ -23,11 +23,12 @@ void core_timer_init() {
 }
 
 void core_timer_handle_irq() {
+    irq_disable();
     u64 freq = get_cntfrq_el0();
     u64 timer = freq / scheduler_ticks_per_second;
     write_cntp_tval(timer);
 
-    irq_enable();
+    //irq_enable();
 
     //u8 core = get_core();
     //printf("[core %d] Handled core timer interrupt by scheduler\n", core);

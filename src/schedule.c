@@ -24,6 +24,12 @@ void flush_cache_ptable() {
     flush_cache(&ptable.current[1]);
     flush_cache(&ptable.current[2]);
     flush_cache(&ptable.current[3]);
+
+    flush_cache_process(ptable.current[0]);
+    flush_cache_process(ptable.current[1]);
+    flush_cache_process(ptable.current[2]);
+    flush_cache_process(ptable.current[3]);
+
 }
 
 void init_ptable(u64 * lock_addr) {
@@ -54,7 +60,7 @@ void start_scheduler() {
     ptable.current[core] = p;
 
     flush_cache_process(p);
-    flush_cache_ptable();
+     flush_cache_ptable();
 
     printf("[core %d] created init task %s\n", core, p->name);
     release(ptable.lock);
@@ -92,7 +98,7 @@ void exit() {
 
 i64 new_process(u64 entry, char*name, u64 argc, char**argv) {
 
-    __asm volatile ("dmb sy");
+    __asm volatile ("dsb sy");
     struct process *p = (struct process *) get_free_page();
     if(!p) return 0;
 
@@ -126,6 +132,8 @@ i64 new_process(u64 entry, char*name, u64 argc, char**argv) {
     flush_cache_process(p);
     flush_cache_ptable();
 
+    __asm volatile ("dsb sy");
+
     release(ptable.lock);
 
     return pid;
@@ -141,6 +149,7 @@ u64 get_pid() {
 }
 
 void schedule() {
+    __asm volatile ("dsb sy");
     u8 core = get_core();
     //printf("[core %d] Running scheduler\n", core);
 
@@ -150,13 +159,13 @@ void schedule() {
     // Disable interrupts and lock ptable mutex
     irq_disable();
     acquire(ptable.lock);
-    flush_cache_ptable();
+    //flush_cache_ptable();
 
     // Filter out any terminated processes
     while(ptable.head && ptable.head->state == TASK_ZOMBIE) {
         struct process *temp = ptable.head;
         ptable.head = ptable.head->next;
-        flush_cache(ptable.head);
+        //flush_cache(ptable.head);
         free_page(temp);
     }
 
@@ -166,7 +175,7 @@ void schedule() {
         //printf("[core %d] No process to switch to! (prev = 0x%X, next = 0x%X)\n", core, ptable.current[core], ptable.head);
         ptable.tail = NULL;
         __asm volatile ("dsb sy");
-        flush_cache(ptable.tail);
+        //flush_cache(ptable.tail);
         release(ptable.lock);
         irq_enable();
         return;
@@ -177,12 +186,13 @@ void schedule() {
     ptable.head = ptable.head->next;
     if(!ptable.head) ptable.tail = NULL;
 
-    flush_cache(ptable.head);
-    flush_cache(ptable.tail);
+    //flush_cache(ptable.head);
+    //flush_cache(ptable.tail);
 
     // Move the current task from the list of currently running tasks
     // to the end of the task list
     struct process *prev = ptable.current[core];
+    prev->next = NULL;
     ptable.current[core] = NULL;
     if(ptable.tail) {
         ptable.tail->next = prev;
@@ -191,12 +201,11 @@ void schedule() {
         ptable.head = prev;
         ptable.tail = prev;
     }
-    prev->next = NULL;
 
     // Switch to the next task
     //printf("[core %d] Switching from 0x%X to process 0x%X\n", core, prev, next);
     ptable.current[core] = next;
-    flush_cache(&ptable.current[core]);
+    flush_cache_ptable();
     flush_cache_process(ptable.current[core]);
     struct process * c = ptable.head;
     while(c) {
@@ -208,7 +217,7 @@ void schedule() {
 }
 
 void schedule_tail() {
-    __asm volatile ("isb sy");
+    __asm volatile ("dsb sy");
     release(ptable.lock);
     irq_enable();
     enable_preempt();
@@ -226,7 +235,7 @@ void kill(u64 argc, char**argv) {
         if(cur && cur->pid == pid) {
             printf("[core %d] Marking pid %d as TASK_ZOMBIE\n", get_core(), pid);
             cur->state = TASK_ZOMBIE;
-            flush_cache(cur->state);
+            //flush_cache(cur->state);
             release(ptable.lock);
             return;
         }
@@ -237,7 +246,7 @@ void kill(u64 argc, char**argv) {
         if(cur->pid == pid) {
             printf("[core %d] Marking pid %d as TASK_ZOMBIE\n", get_core(), pid);
             cur->state = TASK_ZOMBIE;
-            flush_cache(cur->state);
+            //flush_cache(cur->state);
             release(ptable.lock);
             return;
         }
@@ -251,16 +260,15 @@ void kill(u64 argc, char**argv) {
 #define print_console printf
 
 void print_ptable() {
+    __asm volatile ("dsb sy; isb sy");
     irq_disable();
     acquire(ptable.lock);
-
-    __asm volatile ("dsb sy; isb sy");
     
     u8 core = get_core();
     u64 lock_val = *ptable.lock;
-    //printf("[core %d] core vs. lock is %d vs %d, state is %s", core, core + 1, lock_val, lock_val > 0 ? "LOCKED" : "UNLOCKED");
+    printf("[core %d] core vs. lock is %d vs %d, state is %s", core, core + 1, lock_val, lock_val > 0 ? "LOCKED" : "UNLOCKED");
     
-    print_console("\ncores:\n");
+    print_console("\nCPUs:\n");
     struct process *head = ptable.head;
     struct process *cur_core_proc = NULL;
     for(int i=0;i<4;++i) {
@@ -273,9 +281,8 @@ void print_ptable() {
             cur_core_proc ? cur_core_proc->name : "<null>"
         );
     }
-    print_console("\n  not running\n");
+    print_console("\nNot Running\n");
     while(head) {
-        flush_cache_process(head);
         print_console(
             "  pid %d, page 0x%X, %s\n",
             head->pid,

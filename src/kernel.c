@@ -66,7 +66,7 @@ void kernel_main()
     locks.test_lock = 0;
     printf("Initialized lock structure at address 0x%X\n", &locks);
 
-    fbinit(1920, 1080);
+    fbinit(1280, 720);
 
     init_page_tables(&locks);
     u8 ips = (u8)(get_id_aa64mmfr0_el1() & 0xF);
