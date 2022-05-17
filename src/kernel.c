@@ -23,10 +23,11 @@ void secondary_startup() {
 }
 extern struct _ptable ptable;
 
+
 extern struct lock_table {
-    u64 ptable_lock;
-    u64 mem_map_lock;
-    u64 test_lock;
+    u32 ptable_lock;
+    u32 mem_map_lock;
+    u32 counter_lock;
 } locks;
 
 void core_startup() {
@@ -54,51 +55,52 @@ void print_sctlr() {
     printf("[core %d] sctlr_el1: 0x%X\n", get_core(), get_sctlr_el1());
 }
 
+static u64 counter = 0;
+
+void test_printing() {
+    acquire(&locks.counter_lock);
+    uart_puts("test");uart_putc('0' + locks.counter_lock);uart_putc('\n');
+    release(&locks.counter_lock);
+}
+ 
+
 void kernel_main() 
 {
     uart_init_alt();    
     init_printf(0, putc);
 
-    printf("\n\nBooting Raspberry Pi 3\n\nBuilt "__TIME__" on "__DATE__"\n\n");
+    uart_puts("\n\nBooting Raspberry Pi 3\n\nBuilt "__TIME__" on "__DATE__"\n\n");
 
     locks.ptable_lock = 0;
     locks.mem_map_lock = 0;
-    locks.test_lock = 0;
-    printf("Initialized lock structure at address 0x%X\n", &locks);
+    locks.counter_lock = 0;
+    printf("[core %d] Initialized lock structure at address 0x%X\n", get_core(), &locks);
 
-    fbinit(1280, 720);
+    //fbinit(1280, 720);
 
     init_page_tables(&locks);
     u8 ips = (u8)(get_id_aa64mmfr0_el1() & 0xF);
-    u64 t0sz = 64 - 30;
     print_pa_range_support(ips);
     mmu_init();
+    irq_disable();
 
-    init_ptable(&locks.ptable_lock);
     QA7->control_register = 0b00 << 8;
 
-    new_process((u64) shell, "shell", 0, NULL);
+    //init_ptable(&locks.ptable_lock);
 
-    core_execute(1, core_startup);
-    sys_timer_sleep_ms(100);
-    core_execute(2, core_startup);
-    sys_timer_sleep_ms(100);
-    core_execute(3, core_startup);
     sys_timer_sleep_ms(100);
 
-    core_execute(1, start_timed_scheduler);
-    sys_timer_sleep_ms(100);
-    core_execute(2, start_timed_scheduler);
-    sys_timer_sleep_ms(100);
-    core_execute(3, start_timed_scheduler);
-    sys_timer_sleep_ms(100);
+    core_execute(1, mmu_init);
+    core_execute(2, mmu_init);
+    core_execute(3, mmu_init);
+    sys_timer_sleep_ms(200);
 
-    //print_ptable();
+    core_execute(1, test_printing);
+    //core_execute(2, test_printing);
+    //core_execute(3, test_printing);
+    test_printing();
 
-    //printf("[core %d] sctlr_el1: 0x%X\n", get_core(), get_sctlr_el1());
-
-    //new_process((u64) test_loop, "test_loop", 0, NULL);
-
-    start_scheduler();
-    start_timed_scheduler();
+    
+    while(1) {}
+    
 }

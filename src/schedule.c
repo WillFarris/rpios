@@ -58,21 +58,9 @@ void start_scheduler() {
     p->name[8] = core + '0';
     p->name[9] = '\0';
     ptable.current[core] = p;
-
-    flush_cache_process(p);
-     flush_cache_ptable();
-
+    
     printf("[core %d] created init task %s\n", core, p->name);
     release(ptable.lock);
-
-    //print_ptable();
-    //irq_enable();
-
-    //core_timer_init();
-    
-    //while(1) {
-    //    schedule();
-    //}
 }
 
 void disable_preempt() {
@@ -90,7 +78,7 @@ void exit() {
     acquire(ptable.lock);
     u8 core = get_core();
     ptable.current[core]->state = TASK_ZOMBIE;
-    flush_cache(&ptable.current[core]->state);
+    //_flush_cache(&ptable.current[core]->state);
     release(ptable.lock);
     irq_enable();
     schedule();
@@ -116,7 +104,7 @@ i64 new_process(u64 entry, char*name, u64 argc, char**argv) {
     p->next = NULL;
 
     acquire(ptable.lock);
-    flush_cache_ptable();
+    //_flush_cache_ptable();
     u64 pid = 1 + ptable.num_procs++;
     p->pid = pid;
     if(!ptable.head) {
@@ -124,13 +112,13 @@ i64 new_process(u64 entry, char*name, u64 argc, char**argv) {
         ptable.tail = p;
     } else {
         ptable.tail->next = p;
-        flush_cache(&ptable.tail->next);
+        //_flush_cache(&ptable.tail->next);
         ptable.tail = p;
-        flush_cache(&ptable.tail);
+        //_flush_cache(&ptable.tail);
     }
 
-    flush_cache_process(p);
-    flush_cache_ptable();
+    //_flush_cache_process(p);
+    //_flush_cache_ptable();
 
     __asm volatile ("dsb sy");
 
@@ -205,11 +193,11 @@ void schedule() {
     // Switch to the next task
     //printf("[core %d] Switching from 0x%X to process 0x%X\n", core, prev, next);
     ptable.current[core] = next;
-    flush_cache_ptable();
-    flush_cache_process(ptable.current[core]);
+    //_flush_cache_ptable();
+    //_flush_cache_process(ptable.current[core]);
     struct process * c = ptable.head;
     while(c) {
-        flush_cache_process(c);
+        //_flush_cache_process(c);
         c = c->next;
     }
     cpu_switch_to(prev, next);

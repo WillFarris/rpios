@@ -60,7 +60,7 @@ void init_page_tables(u8 * locks_page_addr) {
             translation_table.lower_level3[i][j] = (
                 virt_addr         | // Virtual address
                 (0b1UL     << 10) | // Accessed
-                (0b10      <<  8) | // Outer-sharable
+                (0b11      <<  8) | // Inner-sharable
                 (0b0       <<  7) | // Read-Write
                 (0b0       <<  6) | // Kernel only
                 (mair_attr <<  2) | // MAIR attribute index
@@ -79,8 +79,8 @@ void mmu_init() {
         (0b010LL    << 32) | // IPS,   40 bit virtual address
         (0b01LL     << 14) | // TG0,   64KiB
         (0b10LL     << 12) | // SH0,   Outer-sharable
-        (0b00LL     << 10) | // ORGN0, Write back read-alloc write-alloc cacheable
-        (0b00LL     <<  8) | // IRGN0, Write back read-alloc write-alloc cacheable
+        (0b01LL     << 10) | // ORGN0, Write back read-alloc write-alloc cacheable
+        (0b01LL     <<  8) | // IRGN0, Write back read-alloc write-alloc cacheable
         (0b0LL      <<  7) | // EPD0,  Enable TTBR0 walks
         (0b1LL      << 22) | // A1,    TTBR0
         (32LL       <<  0) | // T0SZ, 
@@ -90,6 +90,7 @@ void mmu_init() {
     // 1: 0xFF - regular DRAM
     // 0: 0x04 - device memory
     set_mair_el1(
+        (0b11110000 << 40) | // Attr 5: 
         (0b01000100 << 32) | // Attr 4: Normal memory, Inner + Outer non-cacheable
         (0b10111011 << 24) | // Attr 3: Normal memory, Inner + Outer write-through non-transient, RW
         (0b00001100 << 16) | // Attr 2: Device memory, GRE
@@ -110,13 +111,13 @@ extern struct lock_table {
 } locks;
 
 u64 get_free_page() {
-    acquire(&locks.mem_map_lock);
+    //acquire(&locks.mem_map_lock);
     for(int i=0;i<NUM_PAGES;++i)
     {
         if(page_map[i] == 0)
         {
             page_map[i] = 1;
-            flush_cache(&page_map[i]);
+            //_flush_cache(&page_map[i]);
 
             u64 page_addr = &__kernel_heap_start + (i * PAGE_SIZE);
             printf("Allocating page at 0x%X, index %d\n", page_addr, i);
@@ -128,12 +129,12 @@ u64 get_free_page() {
         }
     }
     printf("Could not allocate page\n");
-    release(&locks.mem_map_lock);
+    //release(&locks.mem_map_lock);
     return 0;
 }
 
 void free_page(void * page) {
-    acquire(&locks.mem_map_lock);
+    //acquire(&locks.mem_map_lock);
     u64 index = ((u64) (page - (void*)&__kernel_heap_start)) / PAGE_SIZE;
     printf("Freeing page at 0x%X, index %d\n", page, index);
     page_map[index] = 0;
@@ -141,6 +142,6 @@ void free_page(void * page) {
     /*for(u64 j=0;j<PAGE_SIZE/8;++j) {
         *((u64*)addr+j) = 0;
     }*/
-    flush_cache(&page_map[index]);
-    release(&locks.mem_map_lock);
+    //_flush_cache(&page_map[index]);
+    //release(&locks.mem_map_lock);
 }
