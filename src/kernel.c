@@ -16,53 +16,24 @@
 #include "mm.h"
 
 struct FrameBuffer fb;
-
-void secondary_startup() {
-    mmu_init();
-    start_scheduler();
-}
 extern struct _ptable ptable;
-
-
 extern struct lock_table {
     u32 ptable_lock;
     u32 mem_map_lock;
     u32 counter_lock;
 } locks;
 
-void core_startup() {
+void smp_scheduler() {
     mmu_init();
-    //print_sctlr();
     start_scheduler();
-    //while(1) {}
-}
-
-void start_timed_scheduler() {
-    irq_enable();
     core_timer_init();
+    irq_enable();
     while(1) {
-        //schedule();
+        schedule();
     }
 }
 
-void core_draw_pi_logo() {
-    draw_pi_logo(0, 0);
-    exit();
-}
-
-void print_sctlr() {
-    sys_timer_sleep_ms(100);
-    printf("[core %d] sctlr_el1: 0x%X\n", get_core(), get_sctlr_el1());
-}
-
-
-extern void atomic_increment_asm();
-void atomic_increment() {
-    atomic_increment_asm(&locks.counter_lock);
-}
-
-void kernel_main() 
-{
+void kernel_main()  {
     uart_init_alt();    
     init_printf(0, putc);
 
@@ -73,7 +44,7 @@ void kernel_main()
     locks.counter_lock = 0;
     printf("[core %d] Initialized lock structure at address 0x%X\n", get_core(), &locks);
 
-    //fbinit(1280, 720);
+    fbinit(1280, 720);
 
     init_page_tables(&locks);
     u8 ips = (u8)(get_id_aa64mmfr0_el1() & 0xF);
@@ -83,22 +54,12 @@ void kernel_main()
 
     QA7->control_register = 0b00 << 8;
 
-    //init_ptable(&locks.ptable_lock);
+    init_ptable(&locks.ptable_lock);
 
-    sys_timer_sleep_ms(100);
+    new_process((u64) shell, "shell", 0, NULL);
 
-    core_execute(1, mmu_init);
-    core_execute(2, mmu_init);
-    core_execute(3, mmu_init);
-    sys_timer_sleep_ms(200);
-
-    printf("counter: %d\n", locks.counter_lock);
-    core_execute(1, atomic_increment);
-    sys_timer_sleep_ms(200);
-    printf("counter: %d\n", locks.counter_lock);
-
-    printf("CPUECTLR_EL1: 0x%x\n", get_cpuectlr_el1());
-
-    while(1) {}
-    
+    core_execute(1, smp_scheduler);
+    core_execute(2, smp_scheduler);
+    core_execute(3, smp_scheduler);
+    smp_scheduler();   
 }

@@ -7,6 +7,10 @@
 
 .globl _start
 _start:
+    mrs     x0, S3_1_C15_C2_1
+    orr     x0, x0, #0x40
+    msr     S3_1_C15_C2_1, x0
+
     mrs     x5, mpidr_el1
     and     x5, x5, #0x3
     cmp     x5, #0
@@ -80,27 +84,27 @@ el1_entry:
 .balign 4
 slave_core_sleep:
     wfe
-	mov	x2, 204
-	movk x2, 0x4000, lsl 16 //0x400000CC
-	mrs x0, mpidr_el1
-	ubfiz x0, x0, 4, 4
-	ldr	w1, [x0, x2]
-	cbz w1, slave_core_sleep
-    str w1, [x0, x2]
+	mov	    x2, 204
+	movk    x2, 0x4000, lsl 16 //0x400000CC
+	mrs     x0, mpidr_el1
+	ubfiz   x0, x0, 4, 4
+	ldr	    w1, [x0, x2]
+	cbz     w1, slave_core_sleep
+    str     w1, [x0, x2]
     
-    dmb sy // data memory buffer
-    blr x1 //branch and link to register
-    dmb sy
-    b slave_core_sleep
+    dmb     sy // data memory buffer
+    blr     x1 //branch and link to register
+    dmb     sy
+    b       slave_core_sleep
     ret
 
 .globl core_execute
 core_execute:
-    dmb sy
-    ubfiz x0, x0, 2, 8
-    mov x2, 140
-    movk x2, 0x4000, lsl 16
-    str w1, [x2, x0, lsl 2]
+    dmb     sy
+    ubfiz   x0, x0, 2, 8
+    mov     x2, 140
+    movk    x2, 0x4000, lsl 16
+    str     w1, [x2, x0, lsl 2]
     sev
-    dmb sy
+    dmb     sy
     ret
