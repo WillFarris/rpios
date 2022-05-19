@@ -31,8 +31,6 @@ void start_scheduler() {
     p->name[8] = core + '0';
     p->name[9] = '\0';
     ptable.current[core] = p;
-    
-    printf("[core %d] created init task %s\n", core, p->name);
     release(ptable.lock);
 
     core_timer_init();
@@ -72,7 +70,6 @@ i64 new_process(u64 entry, char*name, u64 argc, char**argv) {
     p->ctx.x21 = argv;
     p->ctx.pc = (u64) ret_from_fork;
     p->ctx.sp = (u64) p + 4096;
-    printf("new process at 0x%X has stack starting at 0x%X\n", p, p->ctx.sp);
     p->next = NULL;
 
     acquire(ptable.lock);
@@ -117,7 +114,6 @@ void schedule() {
     // Determine next process to run from the list.
     // Return if there is nothing to switch to
     if(!ptable.head) {
-        //printf("[core %d] No process to switch to! (prev = 0x%X, next = 0x%X)\n", core, ptable.current[core], ptable.head);
         ptable.tail = NULL;
         release(ptable.lock);
         irq_enable();
@@ -168,7 +164,6 @@ void kill(u64 argc, char**argv) {
     for(int i=0;i<4;++i) {
         struct process *cur = ptable.current[i];
         if(cur && cur->pid == pid) {
-            printf("[core %d] Marking pid %d as TASK_ZOMBIE\n", get_core(), pid);
             cur->state = TASK_ZOMBIE;
             release(ptable.lock);
             return;
@@ -178,7 +173,6 @@ void kill(u64 argc, char**argv) {
     struct process *cur = ptable.head;
     while(cur) {
         if(cur->pid == pid) {
-            printf("[core %d] Marking pid %d as TASK_ZOMBIE\n", get_core(), pid);
             cur->state = TASK_ZOMBIE;
             release(ptable.lock);
             return;

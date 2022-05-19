@@ -33,7 +33,7 @@ void print_pa_range_support() {
 }
 
 void init_page_tables(u8 * locks_page_addr) {
-    printf("Populating %d level 2 translation tables\n", NUM_TABLES);
+    // Populating NUM_TABLES level 2 translation tables
     for(int i=0;i<NUM_TABLES;i++) {
         u64 lvl2_addr = (u64)&(translation_table.lower_level3[i]) >> 16;
         translation_table.lower_level2[i] = (
@@ -49,11 +49,9 @@ void init_page_tables(u8 * locks_page_addr) {
             // MMIO used by this program ends at 0x4000FFFF
             // Set device memory to use MAIR_EL1 attribute 0
             if(virt_addr >= PBASE && virt_addr <= 0x4000FFFF) {
-                //printf("[lvl2 table %d] Mapping device memory at 0x%X vs 0x%X\n", i, virt_addr, PBASE);
                 mair_attr = 0;
             } else if (virt_addr == locks_page_addr) {
-                // Mark the page containing our mutex/semaphores as write-back to appease some weird hardware requirement in the manual
-                printf("[lvl2 table %d] Mapping lock structure at 0x%X vs 0x%X\n", i, virt_addr, locks_page_addr);
+                // Mark the page containing our mutex/semaphores as write-back to appease a hardware requirement
                 mair_attr = 1;
             }
             
@@ -73,7 +71,6 @@ void init_page_tables(u8 * locks_page_addr) {
 
 void mmu_init() {
     u8 core = get_core();
-    printf("[core %d] Turning on MMU\n", core);
     u64 tcr_el1 =
         (0b0LL      << 37) | // TBI0,  Top byte used in address calculation
         (0b010LL    << 32) | // IPS,   40 bit virtual address
@@ -101,7 +98,7 @@ void mmu_init() {
     u64 ttbr1_el1 = (u64) &translation_table.higher_level2;
     u64 ttbr0_el1 = (u64) &translation_table.lower_level2;
     mmu_init_asm(ttbr0_el1, ttbr1_el1, tcr_el1);
-    printf("[core %d] MMU enabled\n", core);
+    //printf("[core %d] MMU enabled\n", core);
 }
 
 extern struct lock_table {
@@ -118,7 +115,6 @@ u64 get_free_page() {
         {
             page_map[i] = 1;
             u64 page_addr = &__kernel_heap_start + (i * PAGE_SIZE);
-            printf("Allocating page at 0x%X, index %d\n", page_addr, i);
             for(u64 j=0;j<PAGE_SIZE/8;++j) {
                 *((u64*) page_addr+j) = 0;
             }
@@ -134,7 +130,6 @@ u64 get_free_page() {
 void free_page(void * page) {
     acquire(&locks.mem_map_lock);
     u64 index = ((u64) (page - (void*)&__kernel_heap_start)) / PAGE_SIZE;
-    printf("Freeing page at 0x%X, index %d\n", page, index);
     page_map[index] = 0;
     void *addr = page;
     for(u64 j=0;j<PAGE_SIZE/8;++j) {

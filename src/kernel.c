@@ -42,7 +42,6 @@ void kernel_main()  {
     locks.ptable_lock = 0;
     locks.mem_map_lock = 0;
     locks.counter_lock = 0;
-    printf("[core %d] Initialized lock structure at address 0x%X\n", get_core(), &locks);
 
     fbinit(1280, 720);
 

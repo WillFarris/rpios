@@ -15,7 +15,6 @@ void core_timer_init() {
     u8 core = get_core();
 
     u64 freq = get_cntfrq_el0();
-    printf("[core %d] cntfrq_el0 = %d\n", core, freq);
     u64 timer = freq / scheduler_ticks_per_second;
     write_cntp_tval(timer);
     enable_cntp();
