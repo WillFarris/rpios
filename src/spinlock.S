@@ -22,3 +22,10 @@ atomic_set:
     stlxr   w3, w0, [x1]
     mov     w0, w3
     ret
+
+.globl atomic_increment_asm
+atomic_increment_asm:
+    ldaxr   w1, [x0]
+    add     w2, w1, #1
+    stxr    w3, w2, [x0]
+    cbnz    w3, atomic_increment_asm

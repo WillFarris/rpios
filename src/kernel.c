@@ -55,14 +55,11 @@ void print_sctlr() {
     printf("[core %d] sctlr_el1: 0x%X\n", get_core(), get_sctlr_el1());
 }
 
-static u64 counter = 0;
 
-void test_printing() {
-    acquire(&locks.counter_lock);
-    uart_puts("test");uart_putc('0' + locks.counter_lock);uart_putc('\n');
-    release(&locks.counter_lock);
+extern void atomic_increment_asm();
+void atomic_increment() {
+    atomic_increment_asm(&locks.counter_lock);
 }
- 
 
 void kernel_main() 
 {
@@ -95,12 +92,13 @@ void kernel_main()
     core_execute(3, mmu_init);
     sys_timer_sleep_ms(200);
 
-    core_execute(1, test_printing);
-    //core_execute(2, test_printing);
-    //core_execute(3, test_printing);
-    test_printing();
+    printf("counter: %d\n", locks.counter_lock);
+    core_execute(1, atomic_increment);
+    sys_timer_sleep_ms(200);
+    printf("counter: %d\n", locks.counter_lock);
 
-    
+    printf("CPUECTLR_EL1: 0x%x\n", get_cpuectlr_el1());
+
     while(1) {}
     
 }
