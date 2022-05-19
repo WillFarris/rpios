@@ -7,8 +7,7 @@
 
 #define GPFSEL1         (GPIO_ADDR + 4)
 
-void uart_init_alt ( void )
-{
+void uart_init_alt ( void ) {
 	unsigned int selector;
 
 	selector = REGS_GPIO->func_select[1];//get32(GPFSEL1);
@@ -33,8 +32,7 @@ void uart_init_alt ( void )
     REGS_AUX->mu_control = 3;
 }
 
-void uart_init()
-{
+void uart_init() {
     gpio_pin_set_func(TXD, GFAlt5);
     gpio_pin_set_func(RXD, GFAlt5);
 
@@ -50,8 +48,7 @@ void uart_init()
     REGS_AUX->mu_control = 3;
 
 }
-void uart_puts(const char * s)
-{
+void uart_puts(const char * s) {
     if(!s) return;
     while(*s)
     {
@@ -60,8 +57,7 @@ void uart_puts(const char * s)
     }
 }
 
-void uart_putc(const char c)
-{
+void uart_putc(const char c) {
     if(c == '\n')
     {
         uart_putc('\r');
@@ -70,13 +66,11 @@ void uart_putc(const char c)
     REGS_AUX->mu_io = c;
 }
 
-char uart_getc()
-{
+char uart_getc() {
     while(!(REGS_AUX->mu_lsr & 1));
     return REGS_AUX->mu_io & 0xFF;
 }
 
-void putc(void *p, char c)
-{
+void putc(void *p, char c) {
     uart_putc(c);
 }

@@ -111,14 +111,12 @@ extern struct lock_table {
 } locks;
 
 u64 get_free_page() {
-    //acquire(&locks.mem_map_lock);
+    acquire(&locks.mem_map_lock);
     for(int i=0;i<NUM_PAGES;++i)
     {
         if(page_map[i] == 0)
         {
             page_map[i] = 1;
-            //_flush_cache(&page_map[i]);
-
             u64 page_addr = &__kernel_heap_start + (i * PAGE_SIZE);
             printf("Allocating page at 0x%X, index %d\n", page_addr, i);
             for(u64 j=0;j<PAGE_SIZE/8;++j) {
@@ -129,19 +127,18 @@ u64 get_free_page() {
         }
     }
     printf("Could not allocate page\n");
-    //release(&locks.mem_map_lock);
+    release(&locks.mem_map_lock);
     return 0;
 }
 
 void free_page(void * page) {
-    //acquire(&locks.mem_map_lock);
+    acquire(&locks.mem_map_lock);
     u64 index = ((u64) (page - (void*)&__kernel_heap_start)) / PAGE_SIZE;
     printf("Freeing page at 0x%X, index %d\n", page, index);
     page_map[index] = 0;
     void *addr = page;
-    /*for(u64 j=0;j<PAGE_SIZE/8;++j) {
+    for(u64 j=0;j<PAGE_SIZE/8;++j) {
         *((u64*)addr+j) = 0;
-    }*/
-    //_flush_cache(&page_map[index]);
-    //release(&locks.mem_map_lock);
+    }
+    release(&locks.mem_map_lock);
 }

@@ -6,32 +6,6 @@
 
 struct _ptable ptable;
 
-void flush_cache_process(u8 *p) {
-    u64 proc_size_bytes = sizeof(struct process);
-    //printf("Clearing cache for process at 0x%X (%d bytes)\n", p, proc_size_bytes);
-    u8 *cur = p;
-    while(cur < p + proc_size_bytes) {
-        flush_cache(cur++);
-    }
-}
-
-void flush_cache_ptable() {
-    flush_cache(&ptable.head);
-    flush_cache(&ptable.tail);
-    //flush_cache(&ptable.lock); // Important not to flush this as apparently if messes with the exclusive access
-    flush_cache(&ptable.num_procs);
-    flush_cache(&ptable.current[0]);
-    flush_cache(&ptable.current[1]);
-    flush_cache(&ptable.current[2]);
-    flush_cache(&ptable.current[3]);
-
-    flush_cache_process(ptable.current[0]);
-    flush_cache_process(ptable.current[1]);
-    flush_cache_process(ptable.current[2]);
-    flush_cache_process(ptable.current[3]);
-
-}
-
 void init_ptable(u64 * lock_addr) {
     ptable.head = NULL;
     ptable.tail = NULL;
@@ -40,7 +14,6 @@ void init_ptable(u64 * lock_addr) {
     for(int i=0;i<4;++i) {
         ptable.current[i] = NULL;
     }
-    //flush_cache_ptable();
 }
 
 static u64 cnt = 0;
@@ -61,6 +34,8 @@ void start_scheduler() {
     
     printf("[core %d] created init task %s\n", core, p->name);
     release(ptable.lock);
+
+    core_timer_init();
 }
 
 void disable_preempt() {
@@ -78,15 +53,12 @@ void exit() {
     acquire(ptable.lock);
     u8 core = get_core();
     ptable.current[core]->state = TASK_ZOMBIE;
-    //_flush_cache(&ptable.current[core]->state);
     release(ptable.lock);
     irq_enable();
     schedule();
 }
 
 i64 new_process(u64 entry, char*name, u64 argc, char**argv) {
-
-    __asm volatile ("dsb sy");
     struct process *p = (struct process *) get_free_page();
     if(!p) return 0;
 
@@ -104,7 +76,6 @@ i64 new_process(u64 entry, char*name, u64 argc, char**argv) {
     p->next = NULL;
 
     acquire(ptable.lock);
-    //_flush_cache_ptable();
     u64 pid = 1 + ptable.num_procs++;
     p->pid = pid;
     if(!ptable.head) {
@@ -112,15 +83,8 @@ i64 new_process(u64 entry, char*name, u64 argc, char**argv) {
         ptable.tail = p;
     } else {
         ptable.tail->next = p;
-        //_flush_cache(&ptable.tail->next);
         ptable.tail = p;
-        //_flush_cache(&ptable.tail);
     }
-
-    //_flush_cache_process(p);
-    //_flush_cache_ptable();
-
-    __asm volatile ("dsb sy");
 
     release(ptable.lock);
 
@@ -137,23 +101,16 @@ u64 get_pid() {
 }
 
 void schedule() {
-    __asm volatile ("dsb sy");
     u8 core = get_core();
-    //printf("[core %d] Running scheduler\n", core);
-
-    //if(cnt++ % 100000 == 0)
-    //    printf("[core %d] Entered scheduler\n", core);
 
     // Disable interrupts and lock ptable mutex
     irq_disable();
     acquire(ptable.lock);
-    //flush_cache_ptable();
 
     // Filter out any terminated processes
     while(ptable.head && ptable.head->state == TASK_ZOMBIE) {
         struct process *temp = ptable.head;
         ptable.head = ptable.head->next;
-        //flush_cache(ptable.head);
         free_page(temp);
     }
 
@@ -162,8 +119,6 @@ void schedule() {
     if(!ptable.head) {
         //printf("[core %d] No process to switch to! (prev = 0x%X, next = 0x%X)\n", core, ptable.current[core], ptable.head);
         ptable.tail = NULL;
-        __asm volatile ("dsb sy");
-        //flush_cache(ptable.tail);
         release(ptable.lock);
         irq_enable();
         return;
@@ -173,9 +128,6 @@ void schedule() {
     // Pull the "next" task from the list
     ptable.head = ptable.head->next;
     if(!ptable.head) ptable.tail = NULL;
-
-    //flush_cache(ptable.head);
-    //flush_cache(ptable.tail);
 
     // Move the current task from the list of currently running tasks
     // to the end of the task list
@@ -190,14 +142,9 @@ void schedule() {
         ptable.tail = prev;
     }
 
-    // Switch to the next task
-    //printf("[core %d] Switching from 0x%X to process 0x%X\n", core, prev, next);
     ptable.current[core] = next;
-    //_flush_cache_ptable();
-    //_flush_cache_process(ptable.current[core]);
     struct process * c = ptable.head;
     while(c) {
-        //_flush_cache_process(c);
         c = c->next;
     }
     cpu_switch_to(prev, next);
@@ -223,7 +170,6 @@ void kill(u64 argc, char**argv) {
         if(cur && cur->pid == pid) {
             printf("[core %d] Marking pid %d as TASK_ZOMBIE\n", get_core(), pid);
             cur->state = TASK_ZOMBIE;
-            //flush_cache(cur->state);
             release(ptable.lock);
             return;
         }
@@ -234,7 +180,6 @@ void kill(u64 argc, char**argv) {
         if(cur->pid == pid) {
             printf("[core %d] Marking pid %d as TASK_ZOMBIE\n", get_core(), pid);
             cur->state = TASK_ZOMBIE;
-            //flush_cache(cur->state);
             release(ptable.lock);
             return;
         }

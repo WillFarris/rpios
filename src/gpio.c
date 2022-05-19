@@ -1,8 +1,7 @@
 #include "utils.h"
 #include "regstruct.h"
 
-void gpio_pin_set_func(u8 pin, GpioFunc func)
-{
+void gpio_pin_set_func(u8 pin, GpioFunc func) {
     u8 bit_start = (pin * 3) % 30;
     u8 reg = pin / 10;
 
@@ -13,8 +12,7 @@ void gpio_pin_set_func(u8 pin, GpioFunc func)
     REGS_GPIO->func_select[reg] = selector;
 }
 
-void gpio_pin_enable(u8 pin)
-{
+void gpio_pin_enable(u8 pin) {
     REGS_GPIO->pupd_enable = 0;
     delay(150);
     REGS_GPIO->pupd_enable_clocks[pin / 32] = 1 << (pin % 32);
