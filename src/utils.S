@@ -70,6 +70,16 @@ read_pmccntr_el0:
     mrs x0, pmccntr_el0
     ret
 
+.globl get_sctlr_el1
+get_sctlr_el1:
+    mrs x0, sctlr_el1
+    ret
+
+.globl get_cpuectlr_el1
+get_cpuectlr_el1:
+    mrs     x0, S3_1_C15_C2_1
+    ret
+
 .globl wfe
 wfe:
     wfe

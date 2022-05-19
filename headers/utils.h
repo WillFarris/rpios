@@ -11,6 +11,7 @@ void memzero(u64, u64);
 u32 get_el();
 u64 get_sp();
 u64 get_core();
+u64 get_sctlr_el1();
 void wfe();
 
 u64 strlen();

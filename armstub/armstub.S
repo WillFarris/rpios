@@ -2,8 +2,8 @@
 
 .globl _start
 _start:
-    // Set the core timer frequency to 2MHz on real hardware
-    ldr x0, =20000000
+    // Set the core timer frequency to 1MHz on real hardware
+    ldr x0, =1000000
     msr cntfrq_el0, x0
     
     ldr w0, kernel_entry32

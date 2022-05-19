@@ -2,6 +2,7 @@
 #include "types.h"
 #include "math.h"
 #include "font.h"
+#include "gfx.h"
 #include "string.h"
 #include "fb.h"
 #include "printf.h"
@@ -12,28 +13,33 @@
 #define print_console printf
 #define print_console_c uart_putc
 
+
+#define CMD_BUFFER_SIZE 128
+#define MAX_SHELL_ARGS 16
+
 extern u64 scheduler_ticks_per_second;
 
-#define NUM_CMDS 4
+#define NUM_CMDS 3
 struct command shell_cmds[NUM_CMDS] = {
     { "ptable", NULL, print_ptable },
+    //{ "print_proc_list", NULL, print_proc_list },
     { "kill", "<pid>", kill },
-    { "help", NULL, help },
-    { "test_loop", "<ms delay>", test_loop }
+    { "help", NULL, help }
 };
 
-void math(int argc, char **argv)
-{
-    if(argc < 4) {
-        exit();
-        return;
-    }
+#define NUM_PROGS 4
+struct command shell_progs[NUM_PROGS] = {
+    { "pi_logo", "<x> <y>", draw_pi_logo },
+    { "test_loop", "<ms delay>", test_loop },
+    { "colors", "<x> <y>", rainbow_square },
+    { "clear", NULL, clear_framebuffer }
+};
 
-    exit();
+void clear_framebuffer(int argc, char **argv) {
+    fbclear(0);
 }
 
-void test_loop(int argc, char **argv)
-{
+void test_loop(int argc, char **argv) {
     int delay = 2000;
     if(argc > 1)
         delay = strtol(argv[1]);
@@ -44,7 +50,6 @@ void test_loop(int argc, char **argv)
         printf("\ncore %d pid %d iter %d\n> ", core, pid, i++);
         sys_timer_sleep_ms(delay);
     }
-    exit();
 }
 
 void help(int argc, char **argv) {
@@ -52,69 +57,102 @@ void help(int argc, char **argv) {
     for(int i=0;i<NUM_CMDS;++i) {
         printf("  %s %s\n", shell_cmds[i].name, shell_cmds[i].arghint == 0 ? "" : shell_cmds[i].arghint);
     }
-    printf("\n> ");
-    exit();
+    printf("\nHere are the available programs:\n");
+    for(int i=0;i<NUM_PROGS;++i) {
+        printf("  %s %s\n", shell_progs[i].name, shell_progs[i].arghint == 0 ? "" : shell_progs[i].arghint);
+    }
+    printf("\n");
 }
 
-void parse_command(char *str, char **args)
-{
-    int i=0;
-    char *argstart = str;
+void parse_command(char * commandbuffer, char **args) {
+    int argc=0;
+    char *argstart = commandbuffer;
 
-    char * cur = str;
+    char * cur = commandbuffer;
     while(*cur)
     {
-        if(i > 9) return;
+        if(argc > MAX_SHELL_ARGS) return;
         if(*cur == ' ')
         {
-            args[i++] = argstart;
+            args[argc++] = argstart;
             *cur = 0;
             argstart = ++cur;
         } else ++cur;
     }
-    args[i++] = argstart;
-    args[i] = 0;
+    args[argc++] = argstart;
+    args[argc] = 0;
     
-    for(int n=0;n<NUM_CMDS;++n)
-    {
+    /*printf("Parsed command with %d args\n[ ", argc);
+    for(int i=0;i<argc;++i){
+        printf("(%d, %s) ", i, args[i]);
+    }
+    printf("]\n");*/
+    
+    for(int n=0;n<NUM_CMDS;++n) {
         if(strcmp(args[0], shell_cmds[n].name) == 0)
         {
-            new_process((u64) shell_cmds[n].entry, shell_cmds[n].name, i, args);
+            void (*fun_ptr)(int, char**) =  shell_cmds[n].entry;
+            fun_ptr(argc, args);
+        }
+    }
+
+    for(int n=0;n<NUM_PROGS;++n) {
+        if(strcmp(args[0], shell_progs[n].name) == 0)
+        {
+            new_process((u64) shell_progs[n].entry, shell_progs[n].name, argc, args);
         }
     }
 }
 
-void shell()
-{
-    char commandbuffer[DISPLAY_WIDTH];
-    char * args[10];
-    char *cur = commandbuffer;
+static char commandbuffer[CMD_BUFFER_SIZE];
+static char args[MAX_SHELL_ARGS][CMD_BUFFER_SIZE];
+
+void shell() {
+    for(int i=0;i<CMD_BUFFER_SIZE;++i) {
+        commandbuffer[i] = 0;
+    }
+
+    for(int i=0;i<MAX_SHELL_ARGS;++i) {
+        for(int j=0;j<CMD_BUFFER_SIZE;++j) {
+            args[i][j] = 0;
+        }
+    }
+
+    printf("Command buffer at 0x%x\n", commandbuffer, commandbuffer);
+    printf("Argument array at 0x%x\n", args, args);
+
     u8 core = get_core();
 
-    print_console("\nshell\n> ");
-    while(1)
-    {
+    u32 ci = 0;
+    printf("\nshell\n> ");
+    while(1) {
         char c = uart_getc();
-        switch(c)
-        {
+        switch(c) {
             case 0x7F:
-                fb.cursor_x -= char_width;
+                print_console("Got 0x7F (backspace)\n");
+                /*fb.cursor_x -= char_width;
                 *(--cur) = 0;
                 --cur;
                 print_console_c(' ');
                 fb.cursor_x -= char_width;
+                /break;*/
                 break;
             case '\r':
-                print_console("\n\r> ");
-                *cur = 0;
-                cur = commandbuffer;
+                commandbuffer[ci] = 0;
+                ci = 0;
+
+                //uart_puts("\nParsing command buffer: [");
+                //uart_puts(commandbuffer);
+                uart_putc('\n');
                 parse_command(commandbuffer, args);
+                uart_puts("> ");
                 break;
             default:
                 print_console_c(c);
-                *cur = c;
+                commandbuffer[ci++] = c;
                 break;
         }
-        if(c != '\r') ++cur;
+        //if(c != '\r') ++cur;
     }
+    exit();
 }

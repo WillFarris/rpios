@@ -6,3 +6,5 @@ disable_overscan=1
 armstub=armstub-new.bin
 
 kernel=kernel8.img
+
+enable_jtag_gpio=1

@@ -2,17 +2,13 @@
 #include "fb.h"
 #include "printf.h"
 
-void fbputs(const char*s)
-{
-    acquire(&fb.lock);
+void fbputs(const char*s) {
     if(!s) return;
     while(*s)
         fbputc(*s++);
-    release(&fb.lock);
 }
 
-void pf_fbputc(void *p, char c)
-{
+void pf_fbputc(void *p, char c) {
     if(c == '\n')
     {
         fbputc('\r');
@@ -20,8 +16,7 @@ void pf_fbputc(void *p, char c)
     fbputc(c);
 }
 
-void fbputc(char c)
-{
+void fbputc(char c) {
     if(c == '\n')
     {
         fb.cursor_y += char_height;

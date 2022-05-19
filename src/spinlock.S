@@ -1,19 +1,31 @@
 .globl acquire
 acquire:
-spin_lock:
-    .p2align 8
+.p2align 8
+    mov x2, #1
+.p2align 2
 .L4:
-    ldaxr  w1, [x0]
-    mov    w2, #1
-    stlxr  w3, w2, [x0]
-    cbnz   w3, .L4
-    cbnz   w1, .L4
+    ldaxrb  w1, [x0]
+    stlxrb  w3, w2, [x0]
+    cbnz    w3, .L4
+    uxtb    w1, w1
+    cbnz    w1, .L4
     ret
 
 .globl release
 release:
-    mov w2, 0
-    ldaxr  w1, [x0]
-    stlxr w3, w2, [x0]
-    cbnz w3, release
+    stlr   wzr, [x0]
     ret
+
+.globl atomic_set
+atomic_set:
+    ldaxr   w2, [x1]
+    stlxr   w3, w0, [x1]
+    mov     w0, w3
+    ret
+
+.globl atomic_increment_asm
+atomic_increment_asm:
+    ldaxr   w1, [x0]
+    add     w2, w1, #1
+    stxr    w3, w2, [x0]
+    cbnz    w3, atomic_increment_asm

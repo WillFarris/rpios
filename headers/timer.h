@@ -4,7 +4,8 @@
 
 #define CLOCKHZ 1000000
 
-#define LOCAL_TIMER_RELOAD (0x249F000 << 2) // 38.4MHz / (38400000/4) = 0.25Hz
+//#define LOCAL_TIMER_RELOAD (0x249F000 << 2) // 38.4MHz / (38400000/4) = 0.25Hz
+#define LOCAL_TIMER_RELOAD (0x249F000 >> 2)
 
 extern u32 cntfrq[4];
 

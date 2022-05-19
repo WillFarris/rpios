@@ -1,7 +1,7 @@
 include gccpath.mk
 ARMGNU ?= $(ARMPATH)aarch64-none-elf
 
-C_OPS = -Wall -nostdlib -nostartfiles -ffreestanding -mgeneral-regs-only -g -Iheaders
+C_OPS = -nostdlib -nostartfiles -ffreestanding -g -Iheaders -march='armv8-a' -mcpu='cortex-a53'
 ASM_OPS = -g -Iheaders
 QEMU_OPS = -s -M raspi3b -cpu cortex-a53 -serial null -serial stdio -vnc :1
 
@@ -37,7 +37,7 @@ qemus: kernel8.img
 	qemu-system-aarch64 $(QEMU_OPS) -kernel $(BUILD_DIR)/kernel8.elf -S
 
 gdb:
-	$(ARMGNU)-gdb -q --se build/kernel8.elf
+	aarch64-linux-gnu-gdb -q --se build/kernel8.elf
 
 kernel8.img: $(SRC_DIR)/linker.ld $(OBJ_FILES)
 	mkdir -p $(BUILD_DIR)

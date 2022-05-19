@@ -16,7 +16,7 @@ struct context {
     u64 fp;
     u64 sp;
     u64 pc;
-};
+} __attribute__ ((aligned (16)));
 
 enum pstate {
     TASK_SLEEP,
@@ -27,27 +27,27 @@ enum pstate {
 struct process {
     struct context ctx;
     enum pstate state;
-    char name[20];
+    char name[32];
     u64 counter;
     u64 priority;
     u64 preempt;
     u64 pid;
     u8 core_in_use;
     struct process *next;
-};
+} __attribute__ ((aligned (16)));
 
 struct _ptable {
     u64 num_procs;
     struct process *head;
     struct process *tail;
     struct process * current[4];
-    u64 lock;
+    volatile u64 * lock;
 } __attribute__ ((aligned (8)));
 
 void disable_preempt();
 void enable_preempt();
 
-void init_ptable();
+void init_ptable(u64 * lock_addr);
 void start_scheduler();
 void schedule();
 i64 new_process(u64, char*, u64, char **);

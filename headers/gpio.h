@@ -1,6 +1,10 @@
 #pragma once
 
+#ifdef RPI4
+#define PBASE 0xFE000000
+#else
 #define PBASE 0x3F000000
+#endif
 
 #define LOCAL_TIMER_ADDR 0x40000024
 

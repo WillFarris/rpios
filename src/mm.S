@@ -10,15 +10,32 @@ set_mair_el1:
 
 .globl mmu_init_asm
 mmu_init_asm:
+    msr tcr_el1, x2
+    isb
+
     msr ttbr0_el1, x0
     msr ttbr1_el1, x1
-    msr tcr_el1, x2
     isb
 
     //0001 0000 0000 0101 = 4101 = i-cache, d-cache, mmu enable bits
     mrs x0, sctlr_el1
-    mov x1, #1
+    mov x1, #4101
     orr x0, x0, x1
     msr sctlr_el1, x0
+    isb
+
+    mov x0, #0
+    tlbi vmalle1
+    dsb sy
+    isb
+
+    ret
+
+.globl flush_cache
+flush_cache:
+    dc civac, x0
+    dsb ish
+    ic ivau, x0
+    dsb ish
     isb
     ret
