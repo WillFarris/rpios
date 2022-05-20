@@ -22,7 +22,6 @@ extern u64 scheduler_ticks_per_second;
 #define NUM_CMDS 3
 struct command shell_cmds[NUM_CMDS] = {
     { "ptable", NULL, print_ptable },
-    //{ "print_proc_list", NULL, print_proc_list },
     { "kill", "<pid>", kill },
     { "help", NULL, help }
 };
@@ -82,12 +81,6 @@ void parse_command(char * commandbuffer, char **args) {
     args[argc++] = argstart;
     args[argc] = 0;
     
-    /*printf("Parsed command with %d args\n[ ", argc);
-    for(int i=0;i<argc;++i){
-        printf("(%d, %s) ", i, args[i]);
-    }
-    printf("]\n");*/
-    
     for(int n=0;n<NUM_CMDS;++n) {
         if(strcmp(args[0], shell_cmds[n].name) == 0)
         {
@@ -118,9 +111,6 @@ void shell() {
         }
     }
 
-    printf("Command buffer at 0x%x\n", commandbuffer, commandbuffer);
-    printf("Argument array at 0x%x\n", args, args);
-
     u8 core = get_core();
 
     u32 ci = 0;
@@ -140,9 +130,6 @@ void shell() {
             case '\r':
                 commandbuffer[ci] = 0;
                 ci = 0;
-
-                //uart_puts("\nParsing command buffer: [");
-                //uart_puts(commandbuffer);
                 uart_putc('\n');
                 parse_command(commandbuffer, args);
                 uart_puts("> ");
@@ -152,7 +139,5 @@ void shell() {
                 commandbuffer[ci++] = c;
                 break;
         }
-        //if(c != '\r') ++cur;
     }
-    exit();
 }

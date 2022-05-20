@@ -46,8 +46,6 @@ void kernel_main()  {
     fbinit(1280, 720);
 
     init_page_tables(&locks);
-    u8 ips = (u8)(get_id_aa64mmfr0_el1() & 0xF);
-    print_pa_range_support(ips);
     mmu_init();
     irq_disable();
 
