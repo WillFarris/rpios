@@ -1,7 +1,7 @@
 include gccpath.mk
 ARMGNU ?= $(ARMPATH)aarch64-none-elf
 
-C_OPS = -nostdlib -nostartfiles -ffreestanding -g -Iheaders -march='armv8-a' -mcpu='cortex-a53'
+C_OPS = -nostdlib -nostartfiles -mgeneral-regs-only -ffreestanding -g -Iheaders -march='armv8-a' -mcpu='cortex-a53'
 ASM_OPS = -g -Iheaders
 QEMU_OPS = -s -M raspi3b -cpu cortex-a53 -serial null -serial stdio -vnc :1
 
