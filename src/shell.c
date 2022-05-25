@@ -26,11 +26,12 @@ struct command shell_cmds[NUM_CMDS] = {
     { "help", NULL, help }
 };
 
-#define NUM_PROGS 4
+#define NUM_PROGS 5
 struct command shell_progs[NUM_PROGS] = {
     { "pi_logo", "<x> <y>", draw_pi_logo },
     { "test_loop", "<ms delay>", test_loop },
     { "colors", "<x> <y>", rainbow_square },
+    { "uptime", NULL, uptime },
     { "clear", NULL, clear_framebuffer }
 };
 
@@ -49,6 +50,15 @@ void test_loop(int argc, char **argv) {
         printf("\ncore %d pid %d iter %d\n> ", core, pid, i++);
         sys_timer_sleep_ms(delay);
     }
+}
+
+void uptime(int argc, char **argv) {
+    u64 uptime_ms = sys_timer_get_ms();
+    u64 uptime_s = uptime_ms / 1000;
+    u64 uptime_m = uptime_s / 60;
+    u64 uptime_h = uptime_m / 60;
+    u64 uptime_d = uptime_h / 24;
+    printf("\nuptime: %dd %dh %dm %ds\n> ", uptime_d, uptime_h, uptime_m, uptime_s, uptime_ms);
 }
 
 void help(int argc, char **argv) {
@@ -110,7 +120,6 @@ void shell() {
             args[i][j] = 0;
         }
     }
-
     u8 core = get_core();
 
     u32 ci = 0;

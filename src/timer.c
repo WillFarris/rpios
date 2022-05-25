@@ -74,6 +74,11 @@ void handle_local_timer_irq()
     schedule();
 }
 
+u64 sys_timer_get_ms()
+{
+    return sys_timer_get_ticks() / 1000;
+}
+
 void sys_timer_sleep_ms(u64 ms)
 {
     u64 start = sys_timer_get_ticks();
