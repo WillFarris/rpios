@@ -10,6 +10,10 @@ void draw_pi_logo(int argc, char ** argv) {
   u32 x = strtol(argv[1]);
   u32 y = strtol(argv[2]);
   
+  draw_pi_logo_at_pos(x, y);
+}
+
+void draw_pi_logo_at_pos(u64 x, u64 y) {
   u32 *in = pi_logo.pixel_data;
   u32 *out = (u32 *) fb.ptr + x + (fb.width * y);
   for(int row=0;row<pi_logo.height; ++row) {

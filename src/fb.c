@@ -58,7 +58,13 @@ i32 fbinit(int pw, int ph) {
         fb.pitch  = mbox[33];         //get number of bytes per line
         fb.isrgb  = mbox[24];         //get the actual channel order
         fb.lock   = 0;
+        fb.cursor_x = 0;
+        fb.cursor_y = 128;
         fb.ptr    = (void*)((unsigned long)mbox[28]);
+        
+        draw_pi_logo_at_pos(0, 0);
+        fbputs("\n\nRaspberry Pi 3\n\n\rImage built "__TIME__" on "__DATE__"\n\n");
+
         return 0;
     }
     return -1;

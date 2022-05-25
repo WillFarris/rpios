@@ -38,6 +38,7 @@ void kernel_main()  {
     init_printf(0, putc);
 
     uart_puts("\n\nBooting Raspberry Pi 3\n\nBuilt "__TIME__" on "__DATE__"\n\n");
+    
 
     locks.ptable_lock = 0;
     locks.mem_map_lock = 0;

@@ -47,7 +47,7 @@ void test_loop(int argc, char **argv) {
     u64 pid = get_pid();
     while(1) {
         u8 core = get_core();
-        printf("\ncore %d pid %d iter %d\n> ", core, pid, i++);
+        print_console("\ncore %d pid %d iter %d\n> ", core, pid, i++);
         sys_timer_sleep_ms(delay);
     }
 }
@@ -58,19 +58,19 @@ void uptime(int argc, char **argv) {
     u64 uptime_m = uptime_s / 60;
     u64 uptime_h = uptime_m / 60;
     u64 uptime_d = uptime_h / 24;
-    printf("\nuptime: %dd %dh %dm %ds\n> ", uptime_d, uptime_h, uptime_m, uptime_s, uptime_ms);
+    print_console("\nuptime: %dd %dh %dm %ds %dms\n> ", uptime_d, uptime_h % 24, uptime_m % 60, uptime_s % 60, uptime_ms % 1000);
 }
 
 void help(int argc, char **argv) {
-    printf("Here are the available commands:\n");
+    print_console("Here are the available commands:\n");
     for(int i=0;i<NUM_CMDS;++i) {
-        printf("  %s %s\n", shell_cmds[i].name, shell_cmds[i].arghint == 0 ? "" : shell_cmds[i].arghint);
+        print_console("  %s %s\n", shell_cmds[i].name, shell_cmds[i].arghint == 0 ? "" : shell_cmds[i].arghint);
     }
-    printf("\nHere are the available programs:\n");
+    print_console("\nHere are the available programs:\n");
     for(int i=0;i<NUM_PROGS;++i) {
-        printf("  %s %s\n", shell_progs[i].name, shell_progs[i].arghint == 0 ? "" : shell_progs[i].arghint);
+        print_console("  %s %s\n", shell_progs[i].name, shell_progs[i].arghint == 0 ? "" : shell_progs[i].arghint);
     }
-    printf("\n");
+    print_console("\n");
 }
 
 void parse_command(char * commandbuffer, char **args) {
