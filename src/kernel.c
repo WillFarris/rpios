@@ -55,6 +55,10 @@ void kernel_main()  {
     init_ptable(&locks.ptable_lock);
 
     new_process((u64) shell, "shell", 0, NULL);
+    new_process((u64) rainbow_square, "colors", 3, (char *[3]) {"draw_pi_logo", "128", "0"});
+    new_process((u64) rainbow_square, "colors", 3, (char *[3]) {"draw_pi_logo", "128", "32"});
+    new_process((u64) rainbow_square, "colors", 3, (char *[3]) {"draw_pi_logo", "128", "64"});
+    new_process((u64) rainbow_square, "colors", 3, (char *[3]) {"draw_pi_logo", "128", "96"});
 
     core_execute(1, smp_scheduler);
     core_execute(2, smp_scheduler);
