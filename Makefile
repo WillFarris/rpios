@@ -22,8 +22,8 @@ $(BUILD_DIR)/%_s.o: $(SRC_DIR)/%.S
 	mkdir -p $(@D)
 	$(ARMGNU)-gcc $(ASM_OPS) -MMD -c $< -o $@
 
-C_FILES = $(wildcard $(SRC_DIR)/*.c)
-ASM_FILES = $(wildcard $(SRC_DIR)/*.S)
+C_FILES = $(wildcard $(SRC_DIR)/*.c) $(wildcard $(SRC_DIR)/*/*.c)
+ASM_FILES = $(wildcard $(SRC_DIR)/*.S) $(wildcard $(SRC_DIR)/*/*.S)
 OBJ_FILES = $(C_FILES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%_c.o)
 OBJ_FILES += $(ASM_FILES:$(SRC_DIR)/%.S=$(BUILD_DIR)/%_s.o)
 
@@ -39,9 +39,9 @@ qemus: kernel8.img
 gdb:
 	aarch64-linux-gnu-gdb -q --se build/kernel8.elf
 
-kernel8.img: $(SRC_DIR)/linker.ld $(OBJ_FILES)
+kernel8.img: linker.ld $(OBJ_FILES)
 	mkdir -p $(BUILD_DIR)
-	$(ARMGNU)-ld -T $(SRC_DIR)/linker.ld -o $(BUILD_DIR)/kernel8.elf $(OBJ_FILES)
+	$(ARMGNU)-ld -T linker.ld -o $(BUILD_DIR)/kernel8.elf $(OBJ_FILES)
 	$(ARMGNU)-objcopy $(BUILD_DIR)/kernel8.elf -O binary kernel8.img
 
 armstub/build/armstub_s.o: armstub/armstub.S
