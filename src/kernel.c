@@ -14,6 +14,7 @@
 #include "reg.h"
 #include "proc.h"
 #include "mm.h"
+#include "malloc.h"
 
 struct FrameBuffer fb;
 extern struct _ptable ptable;
@@ -52,8 +53,9 @@ void kernel_main()  {
 
     QA7->control_register = 0b00 << 8;
 
-    init_ptable(&locks.ptable_lock);
+    test_heap();
 
+    init_ptable(&locks.ptable_lock);
     new_process((u64) shell, "shell", 0, NULL);
     new_process((u64) rainbow_square, "colors", 3, (char *[3]) {"draw_pi_logo", "128", "0"});
     new_process((u64) rainbow_square, "colors", 3, (char *[3]) {"draw_pi_logo", "128", "32"});
