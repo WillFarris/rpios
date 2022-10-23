@@ -52,6 +52,7 @@ set_stack:
     msr     sp_el1, x3
     msr     sp_el2, x4
 
+    /*
     ldr     x0, =SCTLR_VALUE_MMU_DISABLED
     msr     sctlr_el1, x0
     ldr     x0, =HCR_VALUE
@@ -59,6 +60,23 @@ set_stack:
     ldr     x0, =SCR_VALUE
     msr     scr_el3, x0
     ldr     x0, =SPSR_EL3_TO_EL1h
+    msr     spsr_el3, x0
+    */
+
+    adr     x0, SCTLR_INIT_VAL
+    ldr     x0, [x0]
+    msr     sctlr_el1, x0
+    
+    adr     x0, HCR_INIT_VAL
+    ldr     x0, [x0]
+    msr     hcr_el2, x0
+    
+    adr     x0, SCR_INIT_VAL
+    ldr     x0, [x0]
+    msr     scr_el3, x0
+
+    adr     x0, SPSR_EL3_INIT_VAL
+    ldr     x0, [x0]
     msr     spsr_el3, x0
 
     adr     x0, el1_entry

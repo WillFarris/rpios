@@ -1,11 +1,8 @@
 #include "mini_uart.h"
 #include "regstruct.h"
-#include "font.h"
 
 #define TXD 14
 #define RXD 15
-
-#define GPFSEL1         (GPIO_ADDR + 4)
 
 void uart_init_alt ( void ) {
 	unsigned int selector;

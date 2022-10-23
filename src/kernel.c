@@ -15,6 +15,11 @@
 #include "proc.h"
 #include "mm.h"
 
+const u64 SCTLR_INIT_VAL = SCTLR_VALUE_MMU_DISABLED;
+const u64 HCR_INIT_VAL = HCR_VALUE;
+const u64 SCR_INIT_VAL = SCR_VALUE;
+const u64 SPSR_EL3_INIT_VAL = SPSR_EL3_TO_EL1h;
+
 struct FrameBuffer fb;
 extern struct _ptable ptable;
 extern struct lock_table {
@@ -34,17 +39,17 @@ void smp_scheduler() {
 }
 
 void kernel_main()  {
-    uart_init_alt();    
+    uart_init();    
     init_printf(0, putc);
 
     uart_puts("\n\nBooting Raspberry Pi 3\n\nBuilt "__TIME__" on "__DATE__"\n\n");
-    
+
 
     locks.ptable_lock = 0;
     locks.mem_map_lock = 0;
     locks.counter_lock = 0;
 
-    fbinit(1280, 720);
+    //fbinit(1280, 720);
 
     init_page_tables(&locks);
     mmu_init();
@@ -55,10 +60,10 @@ void kernel_main()  {
     init_ptable(&locks.ptable_lock);
 
     new_process((u64) shell, "shell", 0, NULL);
-    new_process((u64) rainbow_square, "colors", 3, (char *[3]) {"draw_pi_logo", "128", "0"});
-    new_process((u64) rainbow_square, "colors", 3, (char *[3]) {"draw_pi_logo", "128", "32"});
-    new_process((u64) rainbow_square, "colors", 3, (char *[3]) {"draw_pi_logo", "128", "64"});
-    new_process((u64) rainbow_square, "colors", 3, (char *[3]) {"draw_pi_logo", "128", "96"});
+    //new_process((u64) rainbow_square, "colors", 3, (char *[3]) {"draw_pi_logo", "128", "0"});
+    //new_process((u64) rainbow_square, "colors", 3, (char *[3]) {"draw_pi_logo", "128", "32"});
+    //new_process((u64) rainbow_square, "colors", 3, (char *[3]) {"draw_pi_logo", "128", "64"});
+    //new_process((u64) rainbow_square, "colors", 3, (char *[3]) {"draw_pi_logo", "128", "96"});
 
     core_execute(1, smp_scheduler);
     core_execute(2, smp_scheduler);
