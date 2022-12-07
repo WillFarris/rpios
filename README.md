@@ -2,6 +2,8 @@
 
 I'm rewriting this project in Rust! Most future work on this project will be done [here](https://github.com/WillFarris/rustpi).
 
+![image](https://user-images.githubusercontent.com/9190155/206305202-ec75f3f3-3103-4823-9704-647726ced298.png)
+
 ## About
 Okay so it's not really complete enough to call it a full operating system. This project contains things that I've learned from experimenting with OS development on the Raspberry Pi 3. Most content is from Sergey Matyukevich's [Raspberry Pi OS tutorials](https://github.com/s-matyukevich/raspberry-pi-os) and Low Level Devel's [YouTube tutorial series](https://www.youtube.com/channel/UCRWXAQsN5S3FPDHY4Ttq1Xg). My goal is to learn aarch64 assembly and bare-metal programming on ARM devices. This isn't really intended for anything usable, I'm just interested in the inner workings of computer hardware and this seems like a good way to learn.
 
